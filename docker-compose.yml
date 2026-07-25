@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Service
+  backend:
+    image: python:3.11-slim
+    container_name: storyloom-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "pip install fastapi uvicorn &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # Next.js Frontend Service
+  frontend:
+    image: node:20-alpine
+    container_name: storyloom-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "npm install &&
+             npm run dev"
+    environment:
+      - NODE_ENV=development
+
+  # Neo4j Graph Database Service
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: storyloom-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+      - "7473:7473"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - neo4j_data:/var/lib/neo4j/data
+      - neo4j_logs:/var/lib/neo4j/logs
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
