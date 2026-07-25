@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;height:100%;background:#e9e5dd;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#221f1b;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#b4532a;text-decoration:none}a:hover{color:#8e3f1f}
+::selection{background:rgba(180,83,42,.18)}
+@keyframes bl{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dk textarea::placeholder,.dk input::placeholder{color:#7e766c}
+.dk ::-webkit-scrollbar{width:9px}.dk ::-webkit-scrollbar-thumb{background:rgba(244,241,234,.16);border-radius:9px}.dk ::-webkit-scrollbar-track{background:transparent}
+</style>
+</helmet>
+<template id="__bundler_thumbnail" data-bg-color="#141210">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#141210"/>
+    <rect x="360" y="240" width="480" height="320" rx="6" fill="#fffdfa"/>
+    <rect x="404" y="292" width="240" height="26" rx="4" fill="#221f1b"/>
+    <rect x="404" y="348" width="392" height="12" rx="6" fill="#d8d2c8"/>
+    <rect x="404" y="380" width="360" height="12" rx="6" fill="#d8d2c8"/>
+    <rect x="404" y="412" width="392" height="12" rx="6" fill="#d8d2c8"/>
+    <rect x="404" y="444" width="220" height="12" rx="6" fill="#c9873a"/>
+    <circle cx="600" cy="160" r="34" fill="none" stroke="#c9873a" stroke-width="8"/>
+    <circle cx="600" cy="160" r="12" fill="#c9873a"/>
+  </svg>
+</template>
+<div style="height:100vh;display:flex;flex-direction:column;background:#e9e5dd;overflow:hidden">
+
+  <header style="flex:none;height:52px;display:flex;align-items:center;gap:18px;padding:0 16px 0 18px;background:#f4f1ea;border-bottom:1px solid rgba(34,31,27,.09)">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:18px;height:18px;border-radius:50%;border:1.5px solid #b4532a;display:flex;align-items:center;justify-content:center">
+        <div style="width:6px;height:6px;border-radius:50%;background:#b4532a"></div>
+      </div>
+      <span style="font:500 13.5px/1 'IBM Plex Sans';letter-spacing:.2px">Nightjar Signal</span>
+      <span style="font:400 10.5px/1 'IBM Plex Mono';color:#9a938a;padding:3px 6px;border:1px solid rgba(34,31,27,.12);border-radius:4px">S2 · AUDIO DRAMA</span>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:2px;padding:3px;background:rgba(34,31,27,.05);border-radius:7px">
+      <button onClick="{{ setLayoutA }}" style="{{ tabA }}">Studio</button>
+      <button onClick="{{ setLayoutB }}" style="{{ tabB }}">Focus</button>
+      <button onClick="{{ setLayoutC }}" style="{{ tabC }}">Table read</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font:400 11px/1 'IBM Plex Mono';color:#9a938a">{{ wordCount }} words · {{ runtime }}</span>
+      <div style="display:flex">
+        <div style="width:24px;height:24px;border-radius:50%;background:#b4532a;color:#fff;font:500 10px/24px 'IBM Plex Sans';text-align:center;border:2px solid #f4f1ea">MK</div>
+        <div style="width:24px;height:24px;border-radius:50%;background:#4f6b52;color:#fff;font:500 10px/24px 'IBM Plex Sans';text-align:center;border:2px solid #f4f1ea;margin-left:-7px">JD</div>
+        <div style="width:24px;height:24px;border-radius:50%;background:#4a5b7a;color:#fff;font:500 10px/24px 'IBM Plex Sans';text-align:center;border:2px solid #f4f1ea;margin-left:-7px">AR</div>
+      </div>
+      <button style="font:500 11.5px/1 'IBM Plex Sans';color:#f7f5f1;background:#221f1b;border:none;border-radius:6px;padding:7px 12px;cursor:pointer" style-hover="background:#3a352e">Share</button>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0;position:relative">
+
+    <aside class="dk" style="{{ leftStyle }}">
+      <sc-if value="{{ railMode }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 0">
+          <button onClick="{{ expandLeft }}" title="Episodes" style="width:32px;height:32px;border-radius:7px;border:1px solid rgba(244,241,234,.18);background:rgba(244,241,234,.10);color:#e5e0d8;font:500 11px 'IBM Plex Mono';cursor:pointer" style-hover="border-color:#c9873a;color:#c9873a">EP</button>
+          <button onClick="{{ expandLeft }}" title="Entities" style="width:32px;height:32px;border-radius:7px;border:1px solid rgba(244,241,234,.14);background:transparent;color:#a49b90;font:500 11px 'IBM Plex Mono';cursor:pointer" style-hover="border-color:#c9873a;color:#c9873a">EN</button>
+          <div style="width:20px;height:1px;background:rgba(244,241,234,.16)"></div>
+          <sc-for list="{{ railDots }}" as="d" hint-placeholder-count="4">
+            <div title="{{ d.name }}" style="{{ d.style }}"></div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ fullLeft }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;height:100%;min-height:0">
+
+          <div style="{{ epPaneStyle }}">
+            <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:13px 14px 9px">
+              <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.9px;color:#8f877c">EPISODES</span>
+              <div style="flex:1"></div>
+              <sc-if value="{{ overlayLeft }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ expandLeft }}" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(244,241,234,.16);background:transparent;color:#a49b90;font:400 12px/1 'IBM Plex Sans';cursor:pointer;padding:0;margin-right:6px" style-hover="border-color:#c9873a;color:#c9873a">‹</button>
+              </sc-if>
+              <button style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(244,241,234,.16);background:transparent;color:#a49b90;font:400 13px/1 'IBM Plex Sans';cursor:pointer;padding:0" style-hover="border-color:#c9873a;color:#c9873a">+</button>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:0 8px 10px">
+              <sc-for list="{{ episodes }}" as="ep" hint-placeholder-count="8">
+                <div onClick="{{ ep.open }}" style="{{ ep.style }}" style-hover="background:rgba(244,241,234,.07)">
+                  <span style="{{ ep.dot }}"></span>
+                  <span style="{{ ep.numStyle }}">{{ ep.num }}</span>
+                  <span style="{{ ep.titleStyle }}">{{ ep.title }}</span>
+                  <span style="{{ ep.minStyle }}">{{ ep.mins }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div onMouseDown="{{ startDrag }}" style="flex:none;height:9px;cursor:row-resize;display:flex;align-items:center;justify-content:center;background:#0f0d0b;border-top:1px solid rgba(244,241,234,.10);border-bottom:1px solid rgba(244,241,234,.10)" style-hover="background:#26231e">
+            <div style="width:26px;height:2px;border-radius:2px;background:rgba(244,241,234,.26)"></div>
+          </div>
+
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="flex:none;padding:12px 14px 8px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+                <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.9px;color:#8f877c">STORY BIBLE</span>
+                <span style="font:400 9.5px/1 'IBM Plex Mono';color:#6f675e">{{ entityCount }}</span>
+              </div>
+              <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Filter entities…" style="width:100%;font:400 11.5px/1 'IBM Plex Sans';color:#f4f1ea;background:rgba(244,241,234,.06);border:1px solid rgba(244,241,234,.14);border-radius:6px;padding:6px 8px;outline:none" style-focus="border-color:#c9873a"/>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:0 8px 14px">
+              <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+                <div style="margin-bottom:9px">
+                  <div onClick="{{ g.toggle }}" style="display:flex;align-items:center;gap:6px;padding:5px 6px;cursor:pointer;border-radius:5px" style-hover="background:rgba(244,241,234,.06)">
+                    <span style="{{ g.caret }}">›</span>
+                    <span style="{{ g.swatch }}"></span>
+                    <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:.5px;color:#a49b90;flex:1">{{ g.label }}</span>
+                    <span style="font:400 9.5px/1 'IBM Plex Mono';color:#6f675e">{{ g.count }}</span>
+                  </div>
+                  <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+                    <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                      <div onClick="{{ it.open }}" style="{{ it.style }}" style-hover="background:rgba(244,241,234,.07)">
+                        <span style="{{ it.avatar }}">{{ it.initials }}</span>
+                        <span style="flex:1;font:400 12px/1.2 'IBM Plex Sans';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.name }}</span>
+                        <sc-if value="{{ it.flagged }}" hint-placeholder-val="{{ false }}">
+                          <span style="width:5px;height:5px;border-radius:50%;background:#c9873a"></span>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </aside>
+
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column;background:#e9e5dd;overflow:hidden;position:relative">
+      <div style="flex:none;height:38px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid rgba(34,31,27,.07)">
+        <span style="font:400 10.5px/1 'IBM Plex Mono';color:#9a938a">EP 07 · DRAFT 3</span>
+        <span style="font:400 10.5px/1 'IBM Plex Mono';color:#b5aea4">saved 2m ago</span>
+        <div style="flex:1"></div>
+        <button onClick="{{ toggleAnnotations }}" style="{{ annBtn }}" style-hover="border-color:#b4532a">{{ annLabel }}</button>
+        <span style="display:flex;align-items:center;gap:5px;font:400 10.5px/1 'IBM Plex Mono';color:#c9873a"><span style="width:5px;height:5px;border-radius:50%;background:#c9873a"></span>2 continuity flags</span>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:44px 0 120px">
+        <article style="{{ paperStyle }}">
+          <div style="font:400 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;color:#b5aea4;margin-bottom:14px;white-space:nowrap">EPISODE SEVEN</div>
+          <h1 style="font:500 34px/1.15 'IBM Plex Sans';letter-spacing:-.5px;margin:0 0 8px;color:#221f1b">The Long Silence</h1>
+          <div style="font:400 12.5px/1.5 'IBM Plex Sans';color:#8a837a;margin:0 0 34px;padding-bottom:24px;border-bottom:1px solid rgba(34,31,27,.09)">Runtime 31 min · Cast of four · Recorded on the Tyne, October</div>
+
+          <div style="font:500 10.5px/1.5 'IBM Plex Mono';letter-spacing:1.2px;color:#b4532a;margin:0 0 12px">SCENE 1 — THE RELAY STATION, 04:10</div>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <span style="font:500 12px/1 'IBM Plex Mono';letter-spacing:.6px;color:#6b655c;background:rgba(34,31,27,.05);padding:3px 6px;border-radius:4px;vertical-align:2px">SFX</span>
+            Wind against corrugated steel. Beneath it, a carrier tone — steady, almost patient.
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <strong style="font-weight:500;color:#b4532a">ELIAS VOSS.</strong> Nightjar to anyone listening. It's the tenth of October and I have been alone for six days.
+            <span onMouseEnter="{{ flagIn1 }}" onMouseLeave="{{ flagOut }}" style="{{ flag1Style }}">Six days since Marra took the boat out
+              <sc-if value="{{ hover1 }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:calc(100% + 10px);left:0;width:290px;background:#221f1b;color:#f4f1ea;border-radius:8px;padding:11px 13px;z-index:40;box-shadow:0 14px 34px rgba(0,0,0,.24);animation:fu .14s ease;text-align:left">
+                  <span style="display:block;font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.9px;color:#c9873a;margin-bottom:6px">CONTINUITY · TIMELINE</span>
+                  <span style="display:block;font:400 12.5px/1.5 'IBM Plex Sans'">Ep 5 places Marra's departure on <em>7 October</em> — four days back, not six. One of the two dates has to move.</span>
+                  <span style="display:flex;gap:7px;margin-top:10px">
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';background:#c9873a;color:#221f1b;padding:5px 8px;border-radius:5px">Use “four days”</span>
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';border:1px solid rgba(244,241,234,.28);color:#f4f1ea;padding:5px 8px;border-radius:5px">Open Ep 5</span>
+                  </span>
+                </span>
+              </sc-if>
+            </span>, and the relay has not answered once.
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <span style="font:500 12px/1 'IBM Plex Mono';letter-spacing:.6px;color:#6b655c;background:rgba(34,31,27,.05);padding:3px 6px;border-radius:4px;vertical-align:2px">SFX</span>
+            A switch thrown. The carrier tone drops half a step.
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <strong style="font-weight:500;color:#b4532a">ELIAS.</strong>
+            <span onMouseEnter="{{ revIn }}" onMouseLeave="{{ revOut }}" style="{{ reviewStyle }}">I keep the log because a log is a kind of company, and because the Harbour Board will want to know precisely how a man goes quiet in a room full of instruments that are working perfectly well.
+              <sc-if value="{{ hoverRev }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:calc(100% + 10px);left:0;width:300px;background:#fffdfa;border:1px solid rgba(34,31,27,.12);border-radius:8px;padding:12px 13px;z-index:40;box-shadow:0 14px 34px rgba(34,31,27,.16);animation:fu .14s ease;text-align:left">
+                  <span style="display:flex;align-items:center;gap:6px;margin-bottom:7px">
+                    <span style="width:16px;height:16px;border-radius:50%;background:#4f6b52;color:#fff;font:500 8px/16px 'IBM Plex Sans';text-align:center">AI</span>
+                    <span style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.8px;color:#8a837a">PACING NOTE</span>
+                  </span>
+                  <span style="display:block;font:400 12.5px/1.55 'IBM Plex Sans';color:#3a352e">Fifty-one words in one breath. For audio, a performer needs a landing point — consider splitting after “company.”</span>
+                  <span style="display:flex;gap:7px;margin-top:10px">
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';background:#221f1b;color:#f7f5f1;padding:5px 8px;border-radius:5px">Apply split</span>
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';border:1px solid rgba(34,31,27,.16);color:#6b655c;padding:5px 8px;border-radius:5px">Dismiss</span>
+                  </span>
+                </span>
+              </sc-if>
+            </span>
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <strong style="font-weight:500;color:#b4532a">ELIAS.</strong> Item one. The
+            <span onMouseEnter="{{ flagIn2 }}" onMouseLeave="{{ flagOut }}" style="{{ flag2Style }}">green lamp on the mast
+              <sc-if value="{{ hover2 }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:calc(100% + 10px);left:0;width:290px;background:#221f1b;color:#f4f1ea;border-radius:8px;padding:11px 13px;z-index:40;box-shadow:0 14px 34px rgba(0,0,0,.24);animation:fu .14s ease;text-align:left">
+                  <span style="display:block;font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.9px;color:#c9873a;margin-bottom:6px">CONTINUITY · OBJECT</span>
+                  <span style="display:block;font:400 12.5px/1.5 'IBM Plex Sans'">The bible lists the mast lamp as <em>amber</em> (Ep 1, Ep 4). Green belongs to the harbour beacon.</span>
+                  <span style="display:flex;gap:7px;margin-top:10px">
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';background:#c9873a;color:#221f1b;padding:5px 8px;border-radius:5px">Change to amber</span>
+                    <span style="font:500 10.5px/1 'IBM Plex Sans';border:1px solid rgba(244,241,234,.28);color:#f4f1ea;padding:5px 8px;border-radius:5px">Update bible</span>
+                  </span>
+                </span>
+              </sc-if>
+            </span> is still burning, which means the generator is still turning, which means somebody, somewhere, is still paying for the fuel.
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <span style="font:500 12px/1 'IBM Plex Mono';letter-spacing:.6px;color:#6b655c;background:rgba(34,31,27,.05);padding:3px 6px;border-radius:4px;vertical-align:2px">SFX</span>
+            A gull, far off. Then nothing for three full seconds.
+          </p>
+
+          <div style="font:500 10.5px/1.5 'IBM Plex Mono';letter-spacing:1.2px;color:#b4532a;margin:34px 0 12px">SCENE 2 — THE HARBOUR OFFICE, MORNING</div>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <strong style="font-weight:500;color:#b4532a">DR. MARRA OKONKWO.</strong> You had one instruction, Petra. Log the silence. Don't answer it.
+          </p>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#2b2721;margin:0 0 20px;text-wrap:pretty">
+            <strong style="font-weight:500;color:#b4532a">PETRA LINDQVIST.</strong> And if the silence answers first?
+          </p>
+          <div style="height:1px;background:rgba(34,31,27,.09);margin:30px 0 18px"></div>
+          <p style="font:400 16.5px/1.75 'IBM Plex Sans';color:#b5aea4;margin:0">Continue writing…<span style="display:inline-block;width:2px;height:20px;background:#b4532a;vertical-align:-4px;margin-left:2px;animation:bl 1.1s steps(1) infinite"></span></p>
+        </article>
+      </div>
+
+      <sc-if value="{{ entityOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:38px;right:0;bottom:0;width:340px;background:#fffdfa;border-left:1px solid rgba(34,31,27,.12);box-shadow:-18px 0 40px rgba(34,31,27,.08);z-index:30;display:flex;flex-direction:column;animation:fu .18s ease">
+          <div style="flex:none;display:flex;align-items:flex-start;gap:11px;padding:16px 16px 14px;border-bottom:1px solid rgba(34,31,27,.09)">
+            <div style="{{ detailAvatar }}">{{ detail.initials }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font:500 15.5px/1.25 'IBM Plex Sans';color:#221f1b">{{ detail.name }}</div>
+              <div style="font:400 10px/1 'IBM Plex Mono';letter-spacing:.7px;color:#9a938a;margin-top:5px">{{ detail.kind }} · {{ detail.appearances }}</div>
+            </div>
+            <button onClick="{{ closeEntity }}" style="width:22px;height:22px;border:none;background:transparent;color:#9a938a;font:400 15px/1 'IBM Plex Sans';cursor:pointer;padding:0" style-hover="color:#221f1b">×</button>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px">
+            <div style="font:400 13px/1.6 'IBM Plex Sans';color:#3a352e;margin-bottom:18px">{{ detail.summary }}</div>
+            <div style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.9px;color:#9a938a;margin-bottom:9px">VOICE</div>
+            <div style="font:400 12.5px/1.6 'IBM Plex Sans';color:#3a352e;margin-bottom:18px">{{ detail.voice }}</div>
+            <div style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.9px;color:#9a938a;margin-bottom:9px">CANON FACTS</div>
+            <sc-for list="{{ detail.facts }}" as="f" hint-placeholder-count="4">
+              <div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid rgba(34,31,27,.07)">
+                <span style="font:400 10px/1.5 'IBM Plex Mono';color:#b5aea4;width:34px;flex:none">{{ f.ep }}</span>
+                <span style="flex:1;font:400 12.5px/1.5 'IBM Plex Sans';color:#3a352e">{{ f.text }}</span>
+              </div>
+            </sc-for>
+            <div style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.9px;color:#9a938a;margin:18px 0 9px">RELATIONSHIPS</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ detail.rels }}" as="r" hint-placeholder-count="3">
+                <span style="font:400 11px/1 'IBM Plex Sans';color:#3a352e;background:rgba(34,31,27,.05);border-radius:20px;padding:6px 10px">{{ r }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex:none;padding:12px 16px;border-top:1px solid rgba(34,31,27,.09);display:flex;gap:8px">
+            <button onClick="{{ pinDetail }}" style="flex:1;font:500 11.5px/1 'IBM Plex Sans';background:#221f1b;color:#f7f5f1;border:none;border-radius:6px;padding:9px;cursor:pointer" style-hover="background:#3a352e">Add to chat context</button>
+            <button style="font:500 11.5px/1 'IBM Plex Sans';background:transparent;color:#6b655c;border:1px solid rgba(34,31,27,.14);border-radius:6px;padding:9px 11px;cursor:pointer" style-hover="border-color:#b4532a;color:#b4532a">Edit</button>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+
+    <div class="dk" style="{{ chatWrap }}">
+      <div style="flex:none;display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid rgba(244,241,234,.10)">
+        <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.9px;color:#8f877c">STORY ASSISTANT</span>
+        <div style="flex:1"></div>
+        <span style="font:400 10px/1 'IBM Plex Mono';color:#6f675e">Ep 07 context</span>
+        <sc-if value="{{ floating }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ setLayoutA }}" style="width:20px;height:20px;border:none;background:transparent;color:#8f877c;font:400 14px/1 'IBM Plex Sans';cursor:pointer;padding:0" style-hover="color:#f4f1ea">×</button>
+        </sc-if>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:18px">
+        <sc-for list="{{ messages }}" as="m" hint-placeholder-count="3">
+          <div style="{{ m.wrap }}">
+            <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:88%;background:#e9e5dd;color:#1a1815;border-radius:11px 11px 3px 11px;padding:10px 12px;font:400 13px/1.55 'IBM Plex Sans';text-align:left">{{ m.text }}</div>
+            </sc-if>
+            <sc-if value="{{ m.isBot }}" hint-placeholder-val="{{ true }}">
+              <div style="width:100%">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">
+                  <span style="width:15px;height:15px;border-radius:50%;border:1.5px solid #c9873a;display:block"></span>
+                  <span style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.8px;color:#8f877c">{{ m.label }}</span>
+                </div>
+                <div style="font:400 13px/1.65 'IBM Plex Sans';color:#ded8d0;white-space:pre-wrap">{{ m.text }}</div>
+                <sc-if value="{{ m.hasCites }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px">
+                    <sc-for list="{{ m.cites }}" as="c" hint-placeholder-count="2">
+                      <span style="font:400 10px/1 'IBM Plex Mono';color:#a49b90;border:1px solid rgba(244,241,234,.16);border-radius:4px;padding:4px 6px">{{ c }}</span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.hasActions }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:6px;margin-top:10px">
+                    <button style="font:500 10.5px/1 'IBM Plex Sans';background:#f4f1ea;color:#1a1815;border:none;border-radius:5px;padding:6px 9px;cursor:pointer" style-hover="background:#fff">Insert at cursor</button>
+                    <button style="font:500 10.5px/1 'IBM Plex Sans';background:transparent;color:#a49b90;border:1px solid rgba(244,241,234,.18);border-radius:5px;padding:6px 9px;cursor:pointer" style-hover="border-color:#c9873a;color:#c9873a">Rewrite</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ generating }}" hint-placeholder-val="{{ false }}">
+          <div style="width:100%">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">
+              <span style="width:15px;height:15px;border-radius:50%;border:1.5px solid #c9873a;display:block"></span>
+              <span style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:.8px;color:#8f877c">DRAFTING · READING EP 5–7</span>
+            </div>
+            <div style="display:flex;gap:4px;padding:4px 0">
+              <span style="width:5px;height:5px;border-radius:50%;background:#c9873a;animation:bl 1s infinite"></span>
+              <span style="width:5px;height:5px;border-radius:50%;background:#c9873a;animation:bl 1s .18s infinite"></span>
+              <span style="width:5px;height:5px;border-radius:50%;background:#c9873a;animation:bl 1s .36s infinite"></span>
+            </div>
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:7px">
+              <div style="height:9px;border-radius:3px;background:rgba(244,241,234,.09)"></div>
+              <div style="height:9px;border-radius:3px;background:rgba(244,241,234,.09);width:86%"></div>
+              <div style="height:9px;border-radius:3px;background:rgba(244,241,234,.09);width:54%"></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:none;padding:10px 12px 12px;border-top:1px solid rgba(244,241,234,.10);position:relative">
+        <sc-if value="{{ mentionOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;bottom:calc(100% - 2px);left:12px;right:12px;background:#1d1a16;border:1px solid rgba(244,241,234,.16);border-radius:9px;box-shadow:0 -12px 34px rgba(0,0,0,.4);overflow:hidden;z-index:50;animation:fu .12s ease">
+            <div style="padding:8px 11px;border-bottom:1px solid rgba(244,241,234,.10);font:400 9.5px/1 'IBM Plex Mono';letter-spacing:.8px;color:#8f877c">MENTION AN ENTITY {{ mentionHint }}</div>
+            <div style="max-height:230px;overflow-y:auto;padding:4px">
+              <sc-for list="{{ mentionResults }}" as="r" hint-placeholder-count="5">
+                <div onClick="{{ r.pick }}" style="{{ r.style }}" style-hover="background:rgba(244,241,234,.08)">
+                  <span style="{{ r.avatar }}">{{ r.initials }}</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font:400 12.5px/1.2 'IBM Plex Sans';color:#f4f1ea">{{ r.name }}</span>
+                    <span style="display:block;font:400 10.5px/1.3 'IBM Plex Sans';color:#8f877c;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.blurb }}</span>
+                  </span>
+                  <span style="font:400 9px/1 'IBM Plex Mono';letter-spacing:.6px;color:#6f675e">{{ r.kindShort }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="2">
+              <span style="{{ c.style }}">
+                <span style="{{ c.dot }}"></span>{{ c.name }}
+                <span onClick="{{ c.remove }}" style="cursor:pointer;color:#8f877c;font:400 12px/1 'IBM Plex Sans';margin-left:1px">×</span>
+              </span>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="border:1px solid rgba(244,241,234,.14);border-radius:9px;background:rgba(244,241,234,.05);padding:8px 9px">
+          <textarea value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="Ask, generate, or @mention a character…" rows="2" style="width:100%;border:none;outline:none;resize:none;background:transparent;font:400 13px/1.55 'IBM Plex Sans';color:#f4f1ea"></textarea>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
+            <button onClick="{{ quickCritique }}" style="font:400 10.5px/1 'IBM Plex Mono';color:#a49b90;background:transparent;border:1px solid rgba(244,241,234,.16);border-radius:20px;padding:5px 9px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0" style-hover="border-color:#c9873a;color:#c9873a">critique pacing</button>
+            <button onClick="{{ quickContinue }}" style="font:400 10.5px/1 'IBM Plex Mono';color:#a49b90;background:transparent;border:1px solid rgba(244,241,234,.16);border-radius:20px;padding:5px 9px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0" style-hover="border-color:#c9873a;color:#c9873a">continue scene</button>
+            <div style="flex:1"></div>
+            <button onClick="{{ send }}" style="flex:none;width:28px;min-width:28px;height:28px;border-radius:7px;border:none;background:#c9873a;color:#fff;font:400 13px/1 'IBM Plex Sans';cursor:pointer;padding:0" style-hover="background:#8e3f1f">↑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ chatHidden }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ openChat }}" style="position:absolute;right:20px;bottom:20px;z-index:40;display:flex;align-items:center;gap:8px;background:#221f1b;color:#f4f1ea;border:none;border-radius:22px;padding:11px 16px;font:500 12px/1 'IBM Plex Sans';cursor:pointer;box-shadow:0 10px 28px rgba(34,31,27,.24)" style-hover="background:#3a352e">
+        <span style="width:13px;height:13px;border-radius:50%;border:1.5px solid #c9873a;display:block"></span>Assistant
+      </button>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'|'C'&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;proseWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:560,&quot;max&quot;:900,&quot;step&quot;:20,&quot;default&quot;:720,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+const KINDS = {
+  character: { label: "CHARACTERS", color: "#b4532a", short: "CHAR" },
+  place: { label: "PLACES", color: "#4f6b52", short: "PLACE" },
+  faction: { label: "FACTIONS", color: "#4a5b7a", short: "FACTION" },
+  thread: { label: "PLOT THREADS", color: "#7a4a6b", short: "THREAD" },
+  event: { label: "TIMELINE", color: "#8a6a2a", short: "EVENT" },
+  theme: { label: "THEMES", color: "#6b4a7a", short: "THEME" },
+  object: { label: "OBJECTS", color: "#7a5a4a", short: "OBJECT" }
+};
+
+const ENTITIES = [
+  { id: "elias", kind: "character", name: "Elias Voss", blurb: "Relay operator, Nightjar station", flagged: true,
+    summary: "Sole operator of the Nightjar relay since the Board cut the second post. Keeps an audio log nobody has asked for.",
+    voice: "Dry, procedural, funnier than he means to be. Rarely finishes a sentence about himself.",
+    appearances: "7 episodes",
+    facts: [{ ep: "EP1", text: "Took the Nightjar post after the Cawsand inquiry." }, { ep: "EP3", text: "Cannot swim; will not say so aloud." }, { ep: "EP5", text: "Marra left by boat on 7 October." }, { ep: "EP7", text: "Six days alone — conflicts with EP5." }],
+    rels: ["Marra — former supervisor", "Petra — never met", "Harbour Board — employer"] },
+  { id: "marra", kind: "character", name: "Dr. Marra Okonkwo", blurb: "Acoustic engineer, Harbour Board", flagged: false,
+    summary: "Designed the relay's listening array. Believes the silence is a measurement, not an absence.",
+    voice: "Precise, low, uses the imperative when frightened.",
+    appearances: "5 episodes",
+    facts: [{ ep: "EP2", text: "Built the array in 1998." }, { ep: "EP5", text: "Takes the boat out alone." }, { ep: "EP6", text: "Withholds the Cawsand tape from Petra." }],
+    rels: ["Elias — former supervisee", "Petra — junior", "The Board — adversarial"] },
+  { id: "petra", kind: "character", name: "Petra Lindqvist", blurb: "Junior analyst, first season", flagged: false,
+    summary: "Two months into the job and already keeping her own private log.",
+    voice: "Quick, sceptical, asks the question everyone else is avoiding.",
+    appearances: "4 episodes",
+    facts: [{ ep: "EP4", text: "Joins the harbour office." }, { ep: "EP7", text: "Answers the silence against orders." }],
+    rels: ["Marra — supervisor", "Elias — voice only"] },
+  { id: "nightjar", kind: "place", name: "Nightjar Relay Station", blurb: "Steel hut, six miles offshore", flagged: true,
+    summary: "A corrugated relay post on a rock shelf. Generator, mast, one bunk, one kettle.",
+    voice: "Wind, steel, a carrier tone at 400 Hz.",
+    appearances: "7 episodes",
+    facts: [{ ep: "EP1", text: "Mast lamp is amber." }, { ep: "EP4", text: "Amber lamp confirmed on the mast." }, { ep: "EP7", text: "Described as green — conflict." }],
+    rels: ["Harbour Board — operator", "Elias — resident"] },
+  { id: "harbour", kind: "place", name: "The Harbour Office", blurb: "Tyneside, ground floor", flagged: false,
+    summary: "Linoleum, tape machines, a window that faces the wrong way.", voice: "Rain on glass, chair casters, distant lorries.", appearances: "5 episodes",
+    facts: [{ ep: "EP2", text: "Holds the Cawsand archive." }], rels: ["Marra — office", "Petra — office"] },
+  { id: "board", kind: "faction", name: "The Harbour Board", blurb: "Pays for the fuel", flagged: false,
+    summary: "Nine members, three of whom have never seen the coast.", voice: "Minutes, memos, procedural delay.", appearances: "6 episodes",
+    facts: [{ ep: "EP1", text: "Cut the second relay post." }, { ep: "EP6", text: "Classifies the Cawsand tape." }], rels: ["Elias — employer", "Marra — adversarial"] },
+  { id: "cawsand", kind: "event", name: "The Cawsand Inquiry", blurb: "1998 · nine days of tape", flagged: false,
+    summary: "The last time the array recorded something it could not name.", voice: "—", appearances: "3 episodes",
+    facts: [{ ep: "EP3", text: "Elias testified and was believed." }], rels: ["Marra — witness", "Board — convener"] },
+  { id: "silence", kind: "thread", name: "What the Silence Wants", blurb: "Primary arc · unresolved", flagged: false,
+    summary: "The through-line: the relay's silence is patient and possibly deliberate.", voice: "—", appearances: "7 episodes",
+    facts: [{ ep: "EP7", text: "Petra answers it." }], rels: ["Elias", "Marra"] },
+  { id: "boat", kind: "thread", name: "Marra's Boat", blurb: "Secondary · seeded Ep 5", flagged: true,
+    summary: "Where she went, and why she took the second tape reel with her.", voice: "—", appearances: "3 episodes",
+    facts: [{ ep: "EP5", text: "Departs 7 October." }], rels: ["Marra"] },
+  { id: "company", kind: "theme", name: "A Log Is Company", blurb: "Loneliness as procedure", flagged: false,
+    summary: "Every character keeps a record nobody has asked them to keep.", voice: "—", appearances: "6 episodes",
+    facts: [{ ep: "EP7", text: "Stated outright by Elias." }], rels: [] },
+  { id: "lamp", kind: "object", name: "The Mast Lamp", blurb: "Amber · continuity-sensitive", flagged: true,
+    summary: "Amber, sixty watts, visible from the harbour on a clear night.", voice: "—", appearances: "4 episodes",
+    facts: [{ ep: "EP1", text: "Amber." }, { ep: "EP7", text: "Written as green." }], rels: ["Nightjar Station"] },
+  { id: "reel", kind: "object", name: "Reel Two", blurb: "The missing Cawsand tape", flagged: false,
+    summary: "Nine minutes of the 1998 recording, unaccounted for since Ep 5.", voice: "—", appearances: "2 episodes",
+    facts: [{ ep: "EP5", text: "Leaves with Marra." }], rels: ["Marra", "Board"] }
+];
+
+const EPISODES = [
+  { num: "01", title: "Carrier Tone", mins: "28m", status: "done" },
+  { num: "02", title: "The Array", mins: "31m", status: "done" },
+  { num: "03", title: "Nine Days of Tape", mins: "34m", status: "done" },
+  { num: "04", title: "Petra", mins: "27m", status: "done" },
+  { num: "05", title: "Boat Weather", mins: "30m", status: "review" },
+  { num: "06", title: "Minutes of the Board", mins: "29m", status: "review" },
+  { num: "07", title: "The Long Silence", mins: "31m", status: "draft" },
+  { num: "08", title: "Untitled", mins: "—", status: "empty" },
+  { num: "09", title: "Untitled", mins: "—", status: "empty" }
+];
+
+const STATUS_COLOR = { done: "#4f6b52", review: "#c9873a", draft: "#b4532a", empty: "rgba(34,31,27,.16)" };
+
+class Component extends DCLogic {
+  state = {
+    layout: "A",
+    split: 46,
+    dragging: false,
+    activeEp: "07",
+    query: "",
+    openGroups: { character: true, place: true, faction: false, thread: true, event: false, theme: false, object: false },
+    selected: null,
+    input: "",
+    mentionOpen: false,
+    mentionQuery: "",
+    chips: [{ id: "elias" }, { id: "nightjar" }],
+    hover: null,
+    annotations: true,
+    generating: false,
+    messages: [
+      { role: "bot", label: "LORE · 3 SOURCES", text: "Marra took the boat out on the morning of 7 October (Ep 5, sc. 4). She logged the trip as an array calibration run, but the harbour manifest lists two reels leaving with her and one returning.", cites: ["EP5 · sc.4", "Manifest, Ep 6", "Reel Two"] },
+      { role: "user", text: "Draft Elias's opening log for scene 1 — six days alone, dry, ends on the lamp." },
+      { role: "bot", label: "DRAFT · INSERTED ABOVE", text: "Nightjar to anyone listening. It's the tenth of October and I have been alone for six days.\n\nItem one. The lamp on the mast is still burning, which means the generator is still turning, which means somebody, somewhere, is still paying for the fuel.", actions: true }
+    ]
+  };
+
+  ent(id) { return ENTITIES.find(e => e.id === id); }
+
+  componentDidMount() { this._rz = () => this.setState({ vw: window.innerWidth }); window.addEventListener("resize", this._rz); this._rz(); }
+  componentWillUnmount() { this.stopDrag(); if (this._rz) window.removeEventListener("resize", this._rz); }
+
+  startDrag = e => {
+    e.preventDefault();
+    const move = ev => {
+      const host = ev.currentTarget;
+      const rect = this._sideRect || (this._sideRect = e.currentTarget.parentElement.getBoundingClientRect());
+      const pct = ((ev.clientY - rect.top) / rect.height) * 100;
+      this.setState({ split: Math.max(18, Math.min(76, pct)) });
+    };
+    const up = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); this._sideRect = null; this.setState({ dragging: false }); };
+    this._cleanup = up;
+    window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    this.setState({ dragging: true });
+  };
+  stopDrag = () => { if (this._cleanup) this._cleanup(); };
+
+  onInput = e => {
+    const v = e.target.value;
+    const m = /(^|\s)@([\w-]*)$/.exec(v);
+    this.setState({ input: v, mentionOpen: !!m, mentionQuery: m ? m[2] : "" });
+  };
+  onKey = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.send(); } if (e.key === "Escape") this.setState({ mentionOpen: false }); };
+
+  pick = id => () => {
+    const chips = this.state.chips.some(c => c.id === id) ? this.state.chips : this.state.chips.concat({ id });
+    this.setState({ chips, mentionOpen: false, mentionQuery: "", input: this.state.input.replace(/(^|\s)@([\w-]*)$/, "$1") });
+  };
+  removeChip = id => () => this.setState({ chips: this.state.chips.filter(c => c.id !== id) });
+
+  send = () => {
+    const text = this.state.input.trim();
+    if (!text) return;
+    this.setState({ messages: this.state.messages.concat({ role: "user", text }), input: "", mentionOpen: false, generating: true });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({
+      generating: false,
+      messages: this.state.messages.concat(
+        { role: "user", text },
+        { role: "bot", label: "DRAFT · EP 07 SC.1", text: "SFX. The kettle, then the switch.\n\nELIAS. Item two. I have started reading the manifest out loud, which is either method or the beginning of something. Two reels went out with the boat. One came back.\n\nSFX. Paper. A long breath held too near the microphone.", actions: true }
+      )
+    }), 1700);
+  };
+
+  quick = t => () => { this.setState({ input: t }); };
+  quickCritique = () => this.setState({ input: "Critique the pacing of scene 1 for a listening audience." });
+  quickContinue = () => this.setState({ input: "Continue scene 1 — two more beats, end on an SFX cue." });
+
+  setLayoutA = () => this.setState({ layout: "A" });
+  setLayoutB = () => this.setState({ layout: "B" });
+  setLayoutC = () => this.setState({ layout: "C" });
+  openChat = () => this.setState({ layout: "A" });
+  expandLeft = () => this.setState({ layout: "A", forceExpand: !this.state.forceExpand });
+  toggleAnnotations = () => this.setState({ annotations: !this.state.annotations });
+  openEntity = id => () => this.setState({ selected: id });
+  closeEntity = () => this.setState({ selected: null });
+  pinDetail = () => { const id = this.state.selected; if (id && !this.state.chips.some(c => c.id === id)) this.setState({ chips: this.state.chips.concat({ id }) }); this.setState({ selected: null }); };
+  toggleGroup = k => () => this.setState({ openGroups: Object.assign({}, this.state.openGroups, { [k]: !this.state.openGroups[k] }) });
+
+  avatar(kind, size, dark) {
+    const c = KINDS[kind].color;
+    const bg = dark ? c + "3d" : c + "1f";
+    const fg = dark ? `color-mix(in oklab, ${c}, #fff 52%)` : c;
+    return `width:${size}px;height:${size}px;flex:none;border-radius:${kind === "character" ? "50%" : "5px"};background:${bg};color:${fg};font:500 ${size < 24 ? 8.5 : 12}px/${size}px 'IBM Plex Mono';text-align:center;letter-spacing:.3px`;
+  }
+  initials(name) { return name.replace(/^(Dr\.|The)\s+/, "").split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase(); }
+
+  renderVals() {
+    const s = this.state;
+    const layout = this.props.layout ?? s.layout;
+    const vw = s.vw || 1440;
+    const narrow = vw < 1150, tight = vw < 980;
+    const leftW = tight ? 52 : narrow ? 226 : 258;
+    const chatW = narrow ? 300 : 352;
+    const ann = s.annotations;
+    const rail = layout === "B" || (tight && !s.forceExpand);
+    const overlayLeft = tight && s.forceExpand;
+    const chatMode = layout === "A" ? "dock" : layout === "B" ? "float" : "bottom";
+
+    const tab = on => `font:500 11px/1 'IBM Plex Sans';padding:6px 11px;border-radius:5px;border:none;cursor:pointer;background:${on ? "#fffdfa" : "transparent"};color:${on ? "#221f1b" : "#8a837a"};box-shadow:${on ? "0 1px 2px rgba(34,31,27,.12)" : "none"}`;
+
+    const q = s.query.trim().toLowerCase();
+    const visible = ENTITIES.filter(e => !q || e.name.toLowerCase().includes(q) || e.blurb.toLowerCase().includes(q));
+    const groups = Object.keys(KINDS).map(k => {
+      const items = visible.filter(e => e.kind === k);
+      return items.length ? {
+        key: k, label: KINDS[k].label, count: items.length, open: s.openGroups[k] || !!q,
+        toggle: this.toggleGroup(k),
+        caret: `font:400 12px/1 'IBM Plex Sans';color:#6f675e;display:inline-block;transform:rotate(${s.openGroups[k] || q ? 90 : 0}deg);transition:transform .12s;width:9px`,
+        swatch: `width:7px;height:7px;border-radius:2px;background:${KINDS[k].color};display:block`,
+        items: items.map(e => ({
+          name: e.name, flagged: e.flagged, initials: this.initials(e.name),
+          avatar: this.avatar(e.kind, 19, true), open: this.openEntity(e.id),
+          style: `display:flex;align-items:center;gap:8px;padding:6px 7px 6px 20px;border-radius:6px;cursor:pointer;color:${s.selected === e.id ? "#1a1815" : "#ded8d0"};background:${s.selected === e.id ? "#e0dbd2" : "transparent"}`
+        }))
+      } : null;
+    }).filter(Boolean);
+
+    const mq = s.mentionQuery.toLowerCase();
+    const mentionResults = ENTITIES.filter(e => !mq || e.name.toLowerCase().includes(mq)).slice(0, 6).map(e => ({
+      name: e.name, blurb: e.blurb, kindShort: KINDS[e.kind].short, initials: this.initials(e.name),
+      avatar: this.avatar(e.kind, 26, true), pick: this.pick(e.id),
+      style: "display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer"
+    }));
+
+    const detail = s.selected ? this.ent(s.selected) : null;
+
+    return {
+      tabA: tab(layout === "A"), tabB: tab(layout === "B"), tabC: tab(layout === "C"),
+      setLayoutA: this.setLayoutA, setLayoutB: this.setLayoutB, setLayoutC: this.setLayoutC,
+      openChat: this.openChat, expandLeft: this.expandLeft,
+      wordCount: "4,812", runtime: "≈31 min",
+      railMode: rail, fullLeft: !rail,
+      leftClass: "dk", overlayLeft,
+      leftStyle: `flex:none;width:${rail ? 52 : leftW}px;background:#141210;border-right:1px solid rgba(244,241,234,.10);display:flex;flex-direction:column;min-height:0;transition:width .18s ease;${overlayLeft ? "position:absolute;left:0;top:0;bottom:0;z-index:38;width:258px;box-shadow:22px 0 48px rgba(20,18,16,.34);" : ""}`,
+      epPaneStyle: `flex:none;height:${s.split}%;min-height:90px;display:flex;flex-direction:column`,
+      startDrag: this.startDrag,
+      railDots: ENTITIES.slice(0, 5).map(e => ({ name: e.name, style: `width:7px;height:7px;border-radius:${e.kind === "character" ? "50%" : "2px"};background:${KINDS[e.kind].color}` })),
+
+      episodes: EPISODES.map(e => ({
+        num: e.num, title: e.title, mins: e.mins, open: () => this.setState({ activeEp: e.num }),
+        style: `display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;background:${s.activeEp === e.num ? "#e9e5dd" : "transparent"}`,
+        dot: `width:5px;height:5px;border-radius:50%;flex:none;background:${STATUS_COLOR[e.status]}`,
+        numStyle: `font:400 10px/1 'IBM Plex Mono';width:22px;flex:none;color:${s.activeEp === e.num ? "#6f675e" : "#7e766c"}`,
+        minStyle: `font:400 9.5px/1 'IBM Plex Mono';color:${s.activeEp === e.num ? "#6f675e" : "#5f584f"}`,
+        titleStyle: `flex:1;font:${s.activeEp === e.num ? "500" : "400"} 12px/1.3 'IBM Plex Sans';color:${s.activeEp === e.num ? "#141210" : e.status === "empty" ? "#6f675e" : "#ded8d0"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap`
+      })),
+      entityCount: ENTITIES.length, groups, query: s.query, onQuery: e => this.setState({ query: e.target.value }),
+
+      paperStyle: `width:min(${this.props.proseWidth ?? 720}px, calc(100% - 32px));min-width:0;margin:0 auto;background:#fffdfa;border:1px solid rgba(34,31,27,.08);border-radius:3px;box-shadow:0 1px 2px rgba(34,31,27,.04),0 18px 44px rgba(34,31,27,.06);padding:clamp(28px,4vw,56px) clamp(20px,4.5vw,64px) clamp(40px,6vw,72px)`,
+      annBtn: `font:400 10.5px/1 'IBM Plex Mono';color:${ann ? "#b4532a" : "#8a837a"};background:transparent;border:1px solid ${ann ? "rgba(180,83,42,.4)" : "rgba(34,31,27,.13)"};border-radius:20px;padding:5px 9px;cursor:pointer`,
+      annLabel: ann ? "annotations on" : "annotations off",
+      toggleAnnotations: this.toggleAnnotations,
+
+      flag1Style: `position:relative;${ann ? "text-decoration:underline wavy #c9873a;text-underline-offset:5px;text-decoration-thickness:1.5px;background:rgba(201,135,58,.10);cursor:help;" : ""}`,
+      flag2Style: `position:relative;${ann ? "text-decoration:underline wavy #c9873a;text-underline-offset:5px;text-decoration-thickness:1.5px;background:rgba(201,135,58,.10);cursor:help;" : ""}`,
+      reviewStyle: `position:relative;${ann ? "background:linear-gradient(rgba(79,107,82,.13),rgba(79,107,82,.13));box-shadow:inset 0 -1px 0 rgba(79,107,82,.4);cursor:help;" : ""}`,
+      hover1: ann && s.hover === "f1", hover2: ann && s.hover === "f2", hoverRev: ann && s.hover === "rev",
+      flagIn1: () => this.setState({ hover: "f1" }), flagIn2: () => this.setState({ hover: "f2" }),
+      revIn: () => this.setState({ hover: "rev" }), flagOut: () => this.setState({ hover: null }), revOut: () => this.setState({ hover: null }),
+
+      entityOpen: !!detail,
+      detail: detail ? {
+        name: detail.name, kind: KINDS[detail.kind].label.replace(/S$/, ""), appearances: detail.appearances,
+        summary: detail.summary, voice: detail.voice, facts: detail.facts, rels: detail.rels, initials: this.initials(detail.name)
+      } : { facts: [], rels: [] },
+      detailAvatar: detail ? this.avatar(detail.kind, 38) : "",
+      closeEntity: this.closeEntity, pinDetail: this.pinDetail,
+
+      chatWrap: chatMode === "dock"
+        ? `flex:none;width:${chatW}px;background:#141210;border-left:1px solid rgba(244,241,234,.10);display:flex;flex-direction:column;min-height:0`
+        : chatMode === "float"
+          ? `position:absolute;right:22px;top:22px;bottom:22px;width:${Math.min(372, vw - 120)}px;background:#141210;border:1px solid rgba(244,241,234,.14);border-radius:12px;box-shadow:0 24px 60px rgba(20,18,16,.42);display:flex;flex-direction:column;min-height:0;z-index:35;overflow:hidden;animation:fu .18s ease`
+          : "position:absolute;left:0;right:0;bottom:0;height:290px;background:#141210;border-top:1px solid rgba(244,241,234,.14);box-shadow:0 -14px 40px rgba(20,18,16,.28);display:flex;flex-direction:column;min-height:0;z-index:25",
+      floating: chatMode === "float",
+      chatHidden: false,
+
+      messages: s.messages.map(m => ({
+        isUser: m.role === "user", isBot: m.role === "bot", text: m.text, label: m.label || "ASSISTANT",
+        hasCites: !!(m.cites && m.cites.length), cites: m.cites || [],
+        hasActions: !!m.actions,
+        wrap: `display:flex;justify-content:${m.role === "user" ? "flex-end" : "flex-start"}`
+      })),
+      generating: s.generating,
+      mentionOpen: s.mentionOpen, mentionHint: s.mentionQuery ? "· “" + s.mentionQuery + "”" : "", mentionResults,
+      hasChips: s.chips.length > 0,
+      chips: s.chips.map(c => {
+        const e = this.ent(c.id);
+        return {
+          name: e.name, remove: this.removeChip(c.id),
+          style: `display:inline-flex;align-items:center;gap:5px;font:400 11px/1 'IBM Plex Sans';color:#e5e0d8;background:${KINDS[e.kind].color}33;border:1px solid ${KINDS[e.kind].color}59;border-radius:20px;padding:5px 8px`,
+          dot: `width:6px;height:6px;border-radius:${e.kind === "character" ? "50%" : "2px"};background:${KINDS[e.kind].color};display:block`
+        };
+      }),
+      input: s.input, onInput: this.onInput, onKey: this.onKey, send: this.send,
+      quickCritique: this.quickCritique, quickContinue: this.quickContinue
+    };
+  }
+}
+
+</script>
+</body>
+</html>
