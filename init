@@ -1,6 +1,10 @@
+
 start with fast api backend
 next js frontend
 
 vector store faiss
 
 graph database neo4j
+
+
+test with one book / chapter of Game of Thrones and ingest in both vector / graph and query on both
