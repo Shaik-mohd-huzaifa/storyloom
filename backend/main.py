@@ -1,15 +1,23 @@
+import json
+import logging
 import os
 from typing import Optional
 
 import chromadb
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from neo4j.exceptions import DriverError, Neo4jError
+from openai import OpenAIError
+from pydantic import ValidationError
 from pymongo import MongoClient
 
 from chunking import chunk_text
 from graph_store import GraphStore
 from llm_extraction import extract_entities
 from text_extraction import extract_text
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("storyloom")
 
 app = FastAPI(title="Storyloom Backend")
 
@@ -74,9 +82,31 @@ async def ingest_document(file: UploadFile = File(...), episode: Optional[str] =
 
     total_events = 0
     event_offset = 0
-    for chunk in chunks:
-        result = extract_entities(chunk, episode_name)
-        total_events += graph_store.store_extraction(result, episode_name, event_offset)
+    for idx, chunk in enumerate(chunks):
+        try:
+            result = extract_entities(chunk, episode_name)
+        except (OpenAIError, json.JSONDecodeError, ValidationError) as e:
+            logger.error(
+                "OpenAI extraction failed for episode=%s chunk=%d/%d: %s",
+                episode_name, idx + 1, len(chunks), e, exc_info=True,
+            )
+            raise HTTPException(
+                status_code=502,
+                detail=f"OpenAI extraction failed on chunk {idx + 1}/{len(chunks)}: {e}",
+            ) from e
+
+        try:
+            total_events += graph_store.store_extraction(result, episode_name, event_offset)
+        except (Neo4jError, DriverError) as e:
+            logger.error(
+                "Neo4j write failed for episode=%s chunk=%d/%d: %s",
+                episode_name, idx + 1, len(chunks), e, exc_info=True,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail=f"Neo4j write failed on chunk {idx + 1}/{len(chunks)}: {e}",
+            ) from e
+
         event_offset += len(result.events)
 
     return {
