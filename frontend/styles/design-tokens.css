@@ -1,0 +1,224 @@
+/* ============================================================================
+   STORYLOOM WRITER STUDIO - DESIGN TOKENS
+   Based on Claude Design's Writer Studio spec (Nightjar Signal)
+   ============================================================================ */
+
+:root {
+  /* ========== SURFACES ========== */
+  --color-page-bg: #e9e5dd;
+  --color-header-bg: #f4f1ea;
+  --color-paper-bg: #fffdfa;
+  --color-dark-panel-bg: #141210;
+  --color-dark-elevated-bg: #1d1a16;
+  --color-divider-bg: #0f0d0b;
+  --color-ink-block: #221f1b;
+
+  /* ========== TEXT COLORS - LIGHT MODE ========== */
+  --color-text-ink: #221f1b;
+  --color-text-body: #2b2721;
+  --color-text-secondary: #3a352e;
+  --color-text-muted: #8a837a;
+  --color-text-muted-alt: #9a938a;
+  --color-text-faint: #b5aea4;
+
+  /* ========== TEXT COLORS - DARK MODE ========== */
+  --color-text-on-dark-primary: #f4f1ea;
+  --color-text-on-dark-body: #ded8d0;
+  --color-text-on-dark-muted: #a49b90;
+  --color-text-on-dark-muted-alt: #8f877c;
+  --color-text-on-dark-faint: #6f675e;
+  --color-text-on-dark-faint-alt: #5f584f;
+
+  /* ========== ACCENT COLORS ========== */
+  --color-accent-rust: #b4532a;
+  --color-accent-rust-hover: #8e3f1f;
+  --color-accent-amber: #c9873a;
+  --color-accent-green: #4f6b52;
+
+  /* ========== ENTITY TYPE COLORS ========== */
+  --color-entity-character: #b4532a;
+  --color-entity-place: #4f6b52;
+  --color-entity-faction: #4a5b7a;
+  --color-entity-thread: #7a4a6b;
+  --color-entity-event: #8a6a2a;
+  --color-entity-theme: #6b4a7a;
+  --color-entity-object: #7a5a4a;
+
+  /* ========== ENTITY AVATAR COLORS (Light mode) ========== */
+  --color-avatar-character-fill: #b4532a1f;
+  --color-avatar-character-text: #b4532a;
+  --color-avatar-place-fill: #4f6b521f;
+  --color-avatar-place-text: #4f6b52;
+  --color-avatar-faction-fill: #4a5b7a1f;
+  --color-avatar-faction-text: #4a5b7a;
+  --color-avatar-thread-fill: #7a4a6b1f;
+  --color-avatar-thread-text: #7a4a6b;
+  --color-avatar-event-fill: #8a6a2a1f;
+  --color-avatar-event-text: #8a6a2a;
+  --color-avatar-theme-fill: #6b4a7a1f;
+  --color-avatar-theme-text: #6b4a7a;
+  --color-avatar-object-fill: #7a5a4a1f;
+  --color-avatar-object-text: #7a5a4a;
+
+  /* ========== ENTITY AVATAR COLORS (Dark mode) ========== */
+  --color-avatar-dark-character-fill: #b4532a3d;
+  --color-avatar-dark-character-text: color-mix(in oklab, #b4532a, #fff 52%);
+  --color-avatar-dark-place-fill: #4f6b523d;
+  --color-avatar-dark-place-text: color-mix(in oklab, #4f6b52, #fff 52%);
+  --color-avatar-dark-faction-fill: #4a5b7a3d;
+  --color-avatar-dark-faction-text: color-mix(in oklab, #4a5b7a, #fff 52%);
+  --color-avatar-dark-thread-fill: #7a4a6b3d;
+  --color-avatar-dark-thread-text: color-mix(in oklab, #7a4a6b, #fff 52%);
+  --color-avatar-dark-event-fill: #8a6a2a3d;
+  --color-avatar-dark-event-text: color-mix(in oklab, #8a6a2a, #fff 52%);
+  --color-avatar-dark-theme-fill: #6b4a7a3d;
+  --color-avatar-dark-theme-text: color-mix(in oklab, #6b4a7a, #fff 52%);
+  --color-avatar-dark-object-fill: #7a5a4a3d;
+  --color-avatar-dark-object-text: color-mix(in oklab, #7a5a4a, #fff 52%);
+
+  /* ========== BORDERS ========== */
+  --color-border-light-thin: rgba(34, 31, 27, 0.07);
+  --color-border-light-sm: rgba(34, 31, 27, 0.09);
+  --color-border-light-md: rgba(34, 31, 27, 0.12);
+  --color-border-light-lg: rgba(34, 31, 27, 0.14);
+  --color-border-dark-thin: rgba(244, 241, 234, 0.10);
+  --color-border-dark-sm: rgba(244, 241, 234, 0.12);
+  --color-border-dark-md: rgba(244, 241, 234, 0.14);
+  --color-border-dark-lg: rgba(244, 241, 234, 0.16);
+  --color-border-dark-xl: rgba(244, 241, 234, 0.18);
+
+  /* ========== HOVER WASHES ========== */
+  --color-hover-light-sm: rgba(34, 31, 27, 0.045);
+  --color-hover-light-md: rgba(34, 31, 27, 0.05);
+  --color-hover-dark-sm: rgba(244, 241, 234, 0.06);
+  --color-hover-dark-md: rgba(244, 241, 234, 0.07);
+  --color-hover-dark-lg: rgba(244, 241, 234, 0.08);
+
+  /* ========== SHADOWS ========== */
+  --shadow-paper: 0 1px 2px rgba(34, 31, 27, 0.04), 0 18px 44px rgba(34, 31, 27, 0.06);
+  --shadow-drawer: -18px 0 40px rgba(34, 31, 27, 0.08);
+  --shadow-dark-card: 0 14px 34px rgba(0, 0, 0, 0.24);
+  --shadow-popover: 0 -12px 34px rgba(0, 0, 0, 0.4);
+  --shadow-floating-panel: 0 24px 60px rgba(20, 18, 16, 0.42);
+  --shadow-header-border: rgba(34, 31, 27, 0.09);
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Monaco', 'Courier New', monospace;
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* ========== TYPE SCALE ========== */
+  --text-xs: 9px;
+  --text-sm: 10px;
+  --text-base: 11px;
+  --text-sm-ui: 12px;
+  --text-md: 12.5px;
+  --text-lg: 13px;
+  --text-xl: 13.5px;
+  --text-2xl: 15.5px;
+  --text-3xl: 16.5px;
+  --text-4xl: 34px;
+
+  /* ========== LINE HEIGHT ========== */
+  --line-height-tight: 1.15;
+  --line-height-normal: 1.5;
+  --line-height-prose: 1.75;
+  --line-height-body: 1.65;
+  --line-height-compact: 1.4;
+  --line-height-relaxed: 1.6;
+
+  /* ========== LETTER SPACING ========== */
+  --tracking-tight: -0.5px;
+  --tracking-normal: 0px;
+  --tracking-xs: 0.6px;
+  --tracking-sm: 0.9px;
+  --tracking-md: 1.2px;
+  --tracking-lg: 1.4px;
+  --tracking-tight-mono: 0.9px;
+
+  /* ========== SPACING SCALE ========== */
+  --space-1: 4px;
+  --space-1-25: 5px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-25: 9px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-4-5: 18px;
+  --space-5-5: 22px;
+  --space-8-5: 34px;
+  --space-11: 44px;
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-none: 0;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 6px;
+  --radius-xl: 7px;
+  --radius-2xl: 8px;
+  --radius-3xl: 9px;
+  --radius-bubble: 11px;
+  --radius-pill: 20px;
+  --radius-circle: 50%;
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fade-up: opacity 0.12s ease, transform 0.12s ease;
+  --transition-fade-up-lg: opacity 0.18s ease, transform 0.18s ease;
+  --transition-slide: transform 0.18s ease;
+  --transition-caret-rotate: transform 0.12s ease;
+
+  /* ========== ANIMATIONS ========== */
+  --animation-caret-blink: 1.1s steps(2, start) infinite;
+  --animation-dots-blink: 1s steps(2, start) infinite;
+  --animation-fade-up: fadeUp 0.12s ease forwards;
+  --animation-fade-up-lg: fadeUp 0.18s ease forwards;
+  --animation-slide-in: slideIn 0.18s ease forwards;
+}
+
+/* ========== KEYFRAME ANIMATIONS ========== */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(340px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes blinkDots {
+  0%, 33%, 66%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========== BASE FONT IMPORTS ========== */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
