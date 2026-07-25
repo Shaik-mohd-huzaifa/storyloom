@@ -11,10 +11,22 @@ services:
     ports:
       - "8000:8000"
     command: >
-      sh -c "pip install fastapi uvicorn &&
+      sh -c "pip install fastapi uvicorn python-multipart chromadb pymongo neo4j openai pypdf python-docx &&
              uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
       - PYTHONUNBUFFERED=1
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - MONGO_URI=mongodb://mongodb:27017
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_EXTRACTION_MODEL=${OPENAI_EXTRACTION_MODEL:-gpt-4o-mini}
+    depends_on:
+      - chromadb
+      - mongodb
+      - neo4j
 
   # Next.js Frontend Service
   frontend:
@@ -47,6 +59,28 @@ services:
       - neo4j_data:/var/lib/neo4j/data
       - neo4j_logs:/var/lib/neo4j/logs
 
+  # ChromaDB Vector Database Service
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: storyloom-chromadb
+    ports:
+      - "8001:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+    volumes:
+      - chromadb_data:/chroma/chroma
+
+  # MongoDB Document Database Service
+  mongodb:
+    image: mongo:7
+    container_name: storyloom-mongodb
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   neo4j_data:
   neo4j_logs:
+  chromadb_data:
+  mongodb_data:
