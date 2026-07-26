@@ -73,6 +73,21 @@ def neo4j_health():
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 
+@app.get("/api/entities")
+def get_entities():
+    """Fetch all entities from Neo4j."""
+    try:
+        entities = graph_store.get_all_entities()
+        all_entities = []
+        all_entities.extend(entities.get("characters", []))
+        all_entities.extend(entities.get("locations", []))
+        all_entities.extend(entities.get("plot_threads", []))
+        all_entities.extend(entities.get("events", []))
+        return {"entities": all_entities, "total": len(all_entities)}
+    except Exception as e:
+        logger.error("Failed to fetch entities: %s", e, exc_info=True)
+        return {"entities": [], "total": 0, "error": str(e)}
+
 @app.post("/ingest")
 async def ingest_document(file: UploadFile = File(...), episode: Optional[str] = Form(None)):
     content = await file.read()

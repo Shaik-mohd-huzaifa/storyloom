@@ -72,23 +72,28 @@ function DraggableDivider({ onDrag }) {
 function EntityAvatar({ entity }) {
   const typeColors = {
     character: '#b4532a',
-    place: '#4f6b52',
-    faction: '#4a5b7a',
-    thread: '#7a4a6b',
+    location: '#4f6b52',
+    plotThread: '#7a4a6b',
     event: '#8a6a2a',
-    theme: '#6b4a7a',
-    object: '#7a5a4a',
   };
+
+  // Generate avatar initials from entity name
+  const initials = entity.name
+    .split(' ')
+    .slice(0, 2)
+    .map(word => word[0])
+    .join('')
+    .toUpperCase();
 
   return (
     <div
       className={styles.entityAvatar}
       style={{
-        backgroundColor: typeColors[entity.kind],
+        backgroundColor: typeColors[entity.kind] || '#666',
         color: 'white',
       }}
     >
-      {entity.avatar}
+      {initials || '?'}
     </div>
   );
 }
@@ -109,22 +114,16 @@ function EntityRow({ entity, isSelected, onClick }) {
 function EntityGroup({ type, entities, isOpen, onToggle, selectedEntityId, onEntityClick }) {
   const typeColors = {
     character: '#b4532a',
-    place: '#4f6b52',
-    faction: '#4a5b7a',
-    thread: '#7a4a6b',
+    location: '#4f6b52',
+    plotThread: '#7a4a6b',
     event: '#8a6a2a',
-    theme: '#6b4a7a',
-    object: '#7a5a4a',
   };
 
   const typeLabels = {
     character: 'Characters',
-    place: 'Places',
-    faction: 'Factions',
-    thread: 'Threads',
+    location: 'Locations',
+    plotThread: 'Plot Threads',
     event: 'Events',
-    theme: 'Themes',
-    object: 'Objects',
   };
 
   return (
@@ -188,12 +187,9 @@ export default function LeftSidebar({
   // Group entities by type
   const groupedEntities = {
     character: filteredEntities.filter((e) => e.kind === 'character'),
-    place: filteredEntities.filter((e) => e.kind === 'place'),
-    faction: filteredEntities.filter((e) => e.kind === 'faction'),
-    thread: filteredEntities.filter((e) => e.kind === 'thread'),
+    location: filteredEntities.filter((e) => e.kind === 'location'),
+    plotThread: filteredEntities.filter((e) => e.kind === 'plotThread'),
     event: filteredEntities.filter((e) => e.kind === 'event'),
-    theme: filteredEntities.filter((e) => e.kind === 'theme'),
-    object: filteredEntities.filter((e) => e.kind === 'object'),
   };
 
   const episodesPaneHeight = `${split}%`;

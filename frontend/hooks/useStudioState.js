@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
   mockEpisodes,
-  mockEntities,
   mockManuscript,
   mockChatMessages,
   mockAnnotations,
@@ -31,17 +30,15 @@ export function useStudioState() {
   const [hoverAnnotation, setHoverAnnotation] = useState(null);
 
   // Entities (Story Bible)
-  const [entities, setEntities] = useState(mockEntities);
+  const [entities, setEntities] = useState([]);
+  const [entitiesLoading, setEntitiesLoading] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [query, setQuery] = useState('');
   const [openGroups, setOpenGroups] = useState({
     character: true,
-    place: true,
-    faction: true,
-    thread: true,
+    location: true,
+    plotThread: true,
     event: false,
-    theme: false,
-    object: false,
   });
   const [forceExpand, setForceExpand] = useState(false);
 
@@ -52,6 +49,37 @@ export function useStudioState() {
   const [generating, setGenerating] = useState(false);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
+
+  // Fetch entities from backend
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        // Use backend service name for Docker, localhost for development
+        const backendUrl = 'http://backend:8000';
+        const response = await fetch(`${backendUrl}/api/entities`);
+        if (response.ok) {
+          const data = await response.json();
+          setEntities(data.entities || []);
+          console.log('Loaded', data.entities?.length || 0, 'entities');
+        }
+      } catch (err) {
+        console.warn('Failed to fetch entities:', err);
+        // Fallback: try localhost (for dev)
+        try {
+          const response = await fetch('http://localhost:8000/api/entities');
+          if (response.ok) {
+            const data = await response.json();
+            setEntities(data.entities || []);
+          }
+        } catch (err2) {
+          console.warn('Fallback fetch also failed:', err2);
+        }
+      } finally {
+        setEntitiesLoading(false);
+      }
+    };
+    fetchEntities();
+  }, []);
 
   // Window resize listener
   useEffect(() => {
@@ -208,6 +236,7 @@ export function useStudioState() {
 
     // Entities
     entities,
+    entitiesLoading,
     selectedEntity,
     setSelectedEntity,
     query,

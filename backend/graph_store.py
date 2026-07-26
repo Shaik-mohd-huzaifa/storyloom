@@ -21,6 +21,61 @@ class GraphStore:
     def verify_connectivity(self):
         self._driver.verify_connectivity()
 
+    def get_all_entities(self):
+        """Fetch all entities from Neo4j."""
+        with self._driver.session() as session:
+            return session.execute_read(self._read_all_entities)
+
+    @staticmethod
+    def _read_all_entities(tx):
+        entities = {"characters": [], "locations": [], "plot_threads": [], "events": []}
+
+        # Characters
+        chars = tx.run("MATCH (ch:Character) RETURN ch.name as name, ch.traits as traits, ch.voice_tone as voice, ch.status as status")
+        for record in chars:
+            entities["characters"].append({
+                "id": record["name"],
+                "kind": "character",
+                "name": record["name"],
+                "blurb": record["traits"] or "Character",
+                "summary": record["voice"] or "",
+                "status": record["status"],
+            })
+
+        # Locations
+        locs = tx.run("MATCH (l:Location) RETURN l.name as name")
+        for record in locs:
+            entities["locations"].append({
+                "id": record["name"],
+                "kind": "location",
+                "name": record["name"],
+                "blurb": "Location",
+            })
+
+        # Plot Threads
+        threads = tx.run("MATCH (pt:PlotThread) RETURN pt.name as name, pt.status as status")
+        for record in threads:
+            entities["plot_threads"].append({
+                "id": record["name"],
+                "kind": "plotThread",
+                "name": record["name"],
+                "blurb": "Plot Thread",
+                "status": record["status"],
+            })
+
+        # Events
+        events = tx.run("MATCH (ev:Event) RETURN ev.id as id, ev.description as description, ev.episode as episode")
+        for record in events:
+            entities["events"].append({
+                "id": record["id"],
+                "kind": "event",
+                "name": record["episode"] or "Event",
+                "blurb": (record["description"][:100] if record["description"] else "") or "",
+                "summary": record["description"] or "",
+            })
+
+        return entities
+
     def store_extraction(self, result: ExtractionResult, episode: str, event_offset: int) -> int:
         with self._driver.session() as session:
             session.execute_write(self._write_extraction, result, episode, event_offset)
