@@ -1,53 +1,37 @@
 services:
-  # FastAPI Backend Service
   backend:
-    image: python:3.11-slim
-    container_name: storyloom-backend
-    working_dir: /app
-    volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
-    command: >
-      sh -c "pip install fastapi uvicorn python-multipart chromadb pymongo neo4j openai pypdf python-docx &&
-             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    image: sl-be
+    container_name: sl-be
     environment:
-      - PYTHONUNBUFFERED=1
-      - CHROMA_HOST=chromadb
-      - CHROMA_PORT=8000
-      - MONGO_URI=mongodb://mongodb:27017
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=password
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - MONGO_URI=mongodb://mongodb:27017
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_EXTRACTION_MODEL=${OPENAI_EXTRACTION_MODEL:-gpt-4o-mini}
       - OPENAI_CHAT_MODEL=${OPENAI_CHAT_MODEL:-gpt-4o-mini}
       - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
       - CHAT_AGENT_MAX_ITERATIONS=${CHAT_AGENT_MAX_ITERATIONS:-6}
+    ports:
+      - "8000:8000"
     depends_on:
+      - neo4j
       - chromadb
       - mongodb
-      - neo4j
 
-  # Next.js Frontend Service
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: storyloom-frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    image: sl-fe
+    container_name: sl-fe
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
 
-  # Neo4j Graph Database Service
   neo4j:
     image: neo4j:5.15-community
-    container_name: storyloom-neo4j
-    restart: unless-stopped
+    container_name: sl-neo4j
     ports:
       - "7687:7687"
       - "7474:7474"
@@ -58,26 +42,23 @@ services:
     volumes:
       - neo4j_data:/var/lib/neo4j/data
       - neo4j_logs:/var/lib/neo4j/logs
-    tmpfs:
-      - /var/lib/neo4j/run
 
-  # ChromaDB Vector Database Service
   chromadb:
     image: chromadb/chroma:latest
-    container_name: storyloom-chromadb
+    container_name: sl-chromadb
     ports:
       - "8001:8000"
-    environment:
-      - IS_PERSISTENT=TRUE
     volumes:
-      - chromadb_data:/chroma/chroma
+      - chromadb_data:/chroma
 
-  # MongoDB Document Database Service
   mongodb:
     image: mongo:7
-    container_name: storyloom-mongodb
+    container_name: sl-mongodb
     ports:
       - "27020:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - mongodb_data:/data/db
 

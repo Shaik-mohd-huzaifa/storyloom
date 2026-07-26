@@ -1,0 +1,11 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+python-multipart==0.0.6
+neo4j==5.14.1
+chromadb==1.5.9
+pymongo==4.6.0
+openai==2.48.0
+pydantic==2.5.0
+pypdf==4.0.1
+python-docx==0.8.11
+numpy<2.0
