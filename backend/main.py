@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -36,16 +37,26 @@ app.add_middleware(
 )
 
 def get_clients():
-    try:
-        chroma = chromadb.HttpClient(
-            host=os.getenv("CHROMA_HOST", "chromadb"),
-            port=int(os.getenv("CHROMA_PORT", "8000")),
-        )
-        vector_store = VectorStore(chroma)
-    except Exception as e:
-        logger.warning("ChromaDB not ready yet: %s", e)
-        chroma = None
-        vector_store = None
+    # Chroma can still be starting up when this process does (docker-compose's
+    # depends_on only waits for container start, not readiness) — retry a few times
+    # instead of giving up permanently after one failed attempt at import time.
+    chroma = None
+    vector_store = None
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            chroma = chromadb.HttpClient(
+                host=os.getenv("CHROMA_HOST", "chromadb"),
+                port=int(os.getenv("CHROMA_PORT", "8000")),
+            )
+            vector_store = VectorStore(chroma)
+            break
+        except Exception as e:
+            logger.warning("ChromaDB not ready yet (attempt %d/%d): %s", attempt, max_attempts, e)
+            chroma = None
+            vector_store = None
+            if attempt < max_attempts:
+                time.sleep(2)
 
     mongo = MongoClient(os.getenv("MONGO_URI", "mongodb://mongodb:27017"))
     graph = GraphStore()
