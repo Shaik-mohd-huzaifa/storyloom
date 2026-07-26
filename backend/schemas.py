@@ -32,9 +32,18 @@ class RelationshipEdge(BaseModel):
     relation_type: str
 
 
+class ChunkEntity(BaseModel):
+    text: str
+    characters: List[str] = []
+    locations: List[str] = []
+    plot_threads: List[str] = []
+    event_indices: List[int] = []
+
+
 class ExtractionResult(BaseModel):
     characters: List[CharacterEntity] = []
     locations: List[LocationEntity] = []
     plot_threads: List[PlotThreadEntity] = []
     events: List[EventEntity] = []
     relationships: List[RelationshipEdge] = []
+    chunks: List[ChunkEntity] = []

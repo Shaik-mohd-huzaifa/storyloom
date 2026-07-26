@@ -14,20 +14,27 @@ Return ONLY valid JSON matching this exact structure:
   "locations": [{{"name": str}}],
   "plot_threads": [{{"name": str, "status": "open"|"resolved"|null}}],
   "events": [{{"description": str, "characters": [str], "location": str|null, "plot_thread": str|null}}],
-  "relationships": [{{"character_a": str, "character_b": str, "relation_type": str}}]
+  "relationships": [{{"character_a": str, "character_b": str, "relation_type": str}}],
+  "chunks": [{{"text": str, "characters": [str], "locations": [str], "plot_threads": [str], "event_indices": [int]}}]
 }}
 
 Rules:
 - Only extract entities/events explicitly present in the text below.
-- Reuse the exact same character/location/plot_thread name string across events and relationships so they can be linked.
+- Reuse the exact same character/location/plot_thread name string across events, relationships, and chunks so they can be linked.
 - List events in the chronological order they occur in the text; keep each description to one sentence.
 - If nothing of a given type is present, return an empty list for it.
+
+For "chunks": split the full text below into contiguous, semantically meaningful passages (e.g. one chunk per scene or beat), in order, together covering the whole text. Each chunk is a unit we will embed for semantic search, so:
+- "text" must be the verbatim excerpt from the source text (not a summary).
+- Aim for roughly a paragraph to a scene per chunk (not the whole episode as one chunk, and not single sentences).
+- "characters", "locations", "plot_threads" list the exact name strings (from the lists above) that are present/involved in that chunk.
+- "event_indices" lists the 0-based indices into this response's "events" array for events that occur within that chunk.
 
 Episode/source: {episode}
 
 Text:
 \"\"\"
-{chunk}
+{text}
 \"\"\"
 """
 
@@ -39,7 +46,7 @@ def get_client() -> OpenAI:
     return _client
 
 
-def extract_entities(chunk: str, episode: str) -> ExtractionResult:
+def extract_entities(text: str, episode: str) -> ExtractionResult:
     client = get_client()
     response = client.chat.completions.create(
         model=os.getenv("OPENAI_EXTRACTION_MODEL", "gpt-4o-mini"),
@@ -52,7 +59,7 @@ def extract_entities(chunk: str, episode: str) -> ExtractionResult:
             },
             {
                 "role": "user",
-                "content": EXTRACTION_PROMPT.format(episode=episode, chunk=chunk),
+                "content": EXTRACTION_PROMPT.format(episode=episode, text=text),
             },
         ],
     )

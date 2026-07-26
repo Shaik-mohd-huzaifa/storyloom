@@ -11,10 +11,10 @@ from openai import OpenAIError
 from pydantic import ValidationError
 from pymongo import MongoClient
 
-from chunking import chunk_text
 from graph_store import GraphStore
 from llm_extraction import extract_entities
 from text_extraction import extract_text
+from vector_store import VectorStore
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("storyloom")
@@ -30,12 +30,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-chroma_client = chromadb.HttpClient(
-    host=os.getenv("CHROMA_HOST", "chromadb"),
-    port=int(os.getenv("CHROMA_PORT", "8000")),
-)
-mongo_client = MongoClient(os.getenv("MONGO_URI", "mongodb://mongodb:27017"))
-graph_store = GraphStore()
+def get_clients():
+    try:
+        chroma = chromadb.HttpClient(
+            host=os.getenv("CHROMA_HOST", "chromadb"),
+            port=int(os.getenv("CHROMA_PORT", "8000")),
+        )
+        vector_store = VectorStore(chroma)
+    except Exception as e:
+        logger.warning("ChromaDB not ready yet: %s", e)
+        chroma = None
+        vector_store = None
+
+    mongo = MongoClient(os.getenv("MONGO_URI", "mongodb://mongodb:27017"))
+    graph = GraphStore()
+    return chroma, vector_store, mongo, graph
+
+chroma_client, vector_store, mongo_client, graph_store = get_clients()
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -101,39 +112,33 @@ async def ingest_document(file: UploadFile = File(...), episode: Optional[str] =
         raise HTTPException(status_code=400, detail="No extractable text found in file")
 
     episode_name = episode or file.filename
-    chunks = chunk_text(text)
 
-    total_events = 0
-    event_offset = 0
-    for idx, chunk in enumerate(chunks):
-        try:
-            result = extract_entities(chunk, episode_name)
-        except (OpenAIError, json.JSONDecodeError, ValidationError) as e:
-            logger.error(
-                "OpenAI extraction failed for episode=%s chunk=%d/%d: %s",
-                episode_name, idx + 1, len(chunks), e, exc_info=True,
-            )
-            raise HTTPException(
-                status_code=502,
-                detail=f"OpenAI extraction failed on chunk {idx + 1}/{len(chunks)}: {e}",
-            ) from e
+    try:
+        result = extract_entities(text, episode_name)
+    except (OpenAIError, json.JSONDecodeError, ValidationError) as e:
+        logger.error("OpenAI extraction failed for episode=%s: %s", episode_name, e, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"OpenAI extraction failed: {e}") from e
 
-        try:
-            total_events += graph_store.store_extraction(result, episode_name, event_offset)
-        except (Neo4jError, DriverError) as e:
-            logger.error(
-                "Neo4j write failed for episode=%s chunk=%d/%d: %s",
-                episode_name, idx + 1, len(chunks), e, exc_info=True,
-            )
-            raise HTTPException(
-                status_code=503,
-                detail=f"Neo4j write failed on chunk {idx + 1}/{len(chunks)}: {e}",
-            ) from e
+    if vector_store is None:
+        raise HTTPException(status_code=503, detail="ChromaDB not ready")
 
-        event_offset += len(result.events)
+    try:
+        chunk_ids = vector_store.add_chunks(episode_name, [c.text for c in result.chunks])
+    except OpenAIError as e:
+        logger.error("Embedding failed for episode=%s: %s", episode_name, e, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Embedding failed: {e}") from e
+    except Exception as e:
+        logger.error("ChromaDB write failed for episode=%s: %s", episode_name, e, exc_info=True)
+        raise HTTPException(status_code=503, detail=f"ChromaDB write failed: {e}") from e
+
+    try:
+        total_events = graph_store.store_extraction(result, episode_name, chunk_ids)
+    except (Neo4jError, DriverError) as e:
+        logger.error("Neo4j write failed for episode=%s: %s", episode_name, e, exc_info=True)
+        raise HTTPException(status_code=503, detail=f"Neo4j write failed: {e}") from e
 
     return {
         "episode": episode_name,
-        "chunks_processed": len(chunks),
+        "chunks_ingested": len(chunk_ids),
         "events_extracted": total_events,
     }
