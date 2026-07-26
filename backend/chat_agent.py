@@ -149,13 +149,13 @@ consistent with what's already been established.
 
 """ + CLARIFICATION_INSTRUCTIONS + """
 
-Otherwise, produce exactly {n_options} DISTINCT directions (differ in plot direction, tone, or
+Otherwise, produce exactly {{N_OPTIONS}} DISTINCT directions (differ in plot direction, tone, or
 which character/thread they foreground — do not offer near-duplicates). Each must be justified
 by specific retrieved facts, not just "this would be dramatic."
 
 Respond with ONLY a JSON object (no prose outside it):
-{{"options": [{{"label": str, "text": str, "rationale": str,
-  "citations": [{{"text": str, "episode": str|null, "event_id": str|null, "chunk_id": str|null}}]}}]}}
+{"options": [{"label": str, "text": str, "rationale": str,
+  "citations": [{"text": str, "episode": str|null, "event_id": str|null, "chunk_id": str|null}]}]}
 
 "label" is a short 2-5 word title for the option. "text" is the actual suggested manuscript
 continuation. "rationale" explains why it fits, referencing the citations."""
@@ -223,7 +223,7 @@ def run(request, graph_store, on_step=None) -> dict:
     n_options = request.n_options or 3
 
     if request.mode == "ideate":
-        system_prompt = IDEATE_SYSTEM_PROMPT.format(n_options=n_options)
+        system_prompt = IDEATE_SYSTEM_PROMPT.replace("{{N_OPTIONS}}", str(n_options))
     else:
         system_prompt = ASK_SYSTEM_PROMPT
 
