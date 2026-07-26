@@ -1,11 +1,127 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import styles from '../styles/components.module.css';
 
-function ChatMessage({ message, onInsert, onRewrite }) {
+const MODES = [
+  { id: 'ask', label: 'Ask', description: 'Answer questions about the ingested story' },
+  { id: 'ideate', label: 'Ideate', description: 'Suggest grounded options for what happens next' },
+];
+
+function ModeSelector({ mode, onModeChange }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const current = MODES.find((m) => m.id === mode) || MODES[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  return (
+    <div className={styles.modeSelectorWrap} ref={wrapRef}>
+      <button
+        type="button"
+        className={styles.modeButton}
+        onClick={() => setOpen((o) => !o)}
+        title={current.description}
+      >
+        {current.label}
+        <span className={styles.modeCaret}>▾</span>
+      </button>
+
+      {open && (
+        <div className={styles.modeMenu}>
+          {MODES.map((m) => (
+            <div
+              key={m.id}
+              className={`${styles.modeMenuItem} ${m.id === mode ? styles.modeMenuItemActive : ''}`}
+              onClick={() => {
+                onModeChange?.(m.id);
+                setOpen(false);
+              }}
+            >
+              <div>
+                <div>{m.label}</div>
+                <div className={styles.modeMenuDescription}>{m.description}</div>
+              </div>
+              {m.id === mode && <span className={styles.modeMenuCheck}>✓</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OptionCard({ option, onInsert }) {
+  return (
+    <div className={styles.assistantBubble} style={{ marginTop: 8 }}>
+      <div className={styles.assistantContent}>
+        <div className={styles.assistantLabel}>{option.label}</div>
+        <div className={styles.assistantText}>{option.text}</div>
+        {option.rationale && (
+          <div className={styles.assistantText} style={{ opacity: 0.7, fontStyle: 'italic' }}>
+            {option.rationale}
+          </div>
+        )}
+
+        {option.cites && option.cites.length > 0 && (
+          <div className={styles.citations}>
+            {option.cites.map((cite, idx) => (
+              <div key={idx} className={styles.citation}>
+                {cite.text}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.actions}>
+          <button
+            className={`${styles.action} ${styles.filled}`}
+            onClick={() => onInsert?.(option.action?.text ?? option.text)}
+          >
+            {option.action?.label || 'Insert into scene'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Splits message text on "@KnownEntityName" occurrences and renders those spans as a
+// distinct inline tag, so a mention reads differently from surrounding prose in the
+// sent message — matching how Cursor/Claude render an attached reference after sending.
+function renderWithMentions(text, entities) {
+  if (!text || !entities || entities.length === 0) return text;
+  const names = entities.map((e) => e.name).filter(Boolean).sort((a, b) => b.length - a.length);
+  if (names.length === 0) return text;
+  const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const pattern = new RegExp(`@(${escaped.join('|')})(?![\\w])`, 'gi');
+
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    parts.push(
+      <span key={match.index} className={styles.inlineMention}>
+        @{match[1]}
+      </span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+}
+
+function ChatMessage({ message, onInsert, onRewrite, entities }) {
   if (message.role === 'user') {
     return (
       <div className={styles.message}>
-        <div className={styles.userBubble}>{message.text}</div>
+        <div className={styles.userBubble}>{renderWithMentions(message.text, entities)}</div>
       </div>
     );
   }
@@ -47,18 +163,26 @@ function ChatMessage({ message, onInsert, onRewrite }) {
           )}
         </div>
       </div>
+
+      {message.options && message.options.length > 0 && (
+        <div className={styles.actions} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+          {message.options.map((option) => (
+            <OptionCard key={option.id} option={option} onInsert={onInsert} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function GeneratingState() {
+function GeneratingState({ label }) {
   return (
     <div className={styles.message}>
       <div className={styles.assistantBubble}>
         <div className={styles.assistantAvatar}></div>
         <div className={styles.assistantContent}>
           <div className={styles.generatingState}>
-            <div className={styles.generatingLabel}>DRAFTING · READING EP 5–7</div>
+            <div className={styles.generatingLabel}>{label || 'THINKING'}</div>
             <div className={styles.generatingDots}>
               <div className={styles.dot}></div>
               <div className={styles.dot}></div>
@@ -79,22 +203,16 @@ function GeneratingState() {
 function MentionPopover({ query, matches, onSelect, onClose }) {
   const typeColors = {
     character: '#b4532a',
-    place: '#4f6b52',
-    faction: '#4a5b7a',
-    thread: '#7a4a6b',
+    location: '#4f6b52',
+    plotThread: '#7a4a6b',
     event: '#8a6a2a',
-    theme: '#6b4a7a',
-    object: '#7a5a4a',
   };
 
   const typeLabels = {
     character: 'Character',
-    place: 'Place',
-    faction: 'Faction',
-    thread: 'Thread',
+    location: 'Location',
+    plotThread: 'Plot Thread',
     event: 'Event',
-    theme: 'Theme',
-    object: 'Object',
   };
 
   if (!matches || matches.length === 0) {
@@ -138,16 +256,20 @@ function MentionPopover({ query, matches, onSelect, onClose }) {
 export default function RightPanel({
   messages,
   generating,
+  progressLabel,
+  mode,
+  onModeChange,
   input,
   onInputChange,
-  contextChips,
-  onRemoveChip,
   mentionOpen,
   mentionQuery,
   mentionMatches,
   onSelectMention,
   onSendMessage,
+  onInsert,
+  onRewrite,
   entities,
+  activeEp,
 }) {
   const messagesEndRef = useRef(null);
 
@@ -156,43 +278,24 @@ export default function RightPanel({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, generating]);
 
-  const getEntityName = (entityId) => {
-    return entities.find((e) => e.id === entityId)?.name || '';
-  };
-
   return (
     <div className={styles.rightPanel}>
       {/* Header */}
       <div className={styles.chatHeader}>
         <div>
           <div className={styles.chatTitle}>STORY ASSISTANT</div>
-          <div className={styles.chatContext}>Ep 07 context</div>
+          <div className={styles.chatContext}>
+            {activeEp?.title ? `${activeEp.title} context` : 'No episode selected'}
+          </div>
         </div>
       </div>
-
-      {/* Context Chips */}
-      {contextChips.length > 0 && (
-        <div className={styles.contextChips}>
-          {contextChips.map((chipId) => (
-            <div key={chipId} className={styles.contextChip}>
-              {getEntityName(chipId)}
-              <span
-                className={styles.contextChipRemove}
-                onClick={() => onRemoveChip(chipId)}
-              >
-                ×
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Messages */}
       <div className={styles.messagesContainer}>
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <ChatMessage key={message.id} message={message} onInsert={onInsert} onRewrite={onRewrite} entities={entities} />
         ))}
-        {generating && <GeneratingState />}
+        {generating && <GeneratingState label={progressLabel} />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -201,7 +304,7 @@ export default function RightPanel({
         <div style={{ position: 'relative' }}>
           <textarea
             className={styles.composerInput}
-            placeholder="Ask about the story…"
+            placeholder={mode === 'ideate' ? 'Describe what should happen next…' : 'Ask about the story…'}
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={(e) => {
@@ -223,8 +326,7 @@ export default function RightPanel({
         </div>
 
         <div className={styles.composerActions}>
-          <button className={styles.quickAction}>Critique pacing</button>
-          <button className={styles.quickAction}>Continue scene</button>
+          <ModeSelector mode={mode} onModeChange={onModeChange} />
           <button
             className={styles.sendButton}
             onClick={onSendMessage}

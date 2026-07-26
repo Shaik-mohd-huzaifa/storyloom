@@ -61,16 +61,19 @@ export default function Layout({ state }) {
           <RightPanel
             messages={state.messages}
             generating={state.generating}
+            progressLabel={state.progressLabel}
+            mode={state.mode}
+            onModeChange={state.setMode}
             input={state.input}
             onInputChange={state.handleInputChange}
-            contextChips={state.contextChips}
-            onRemoveChip={state.removeContextChip}
             mentionOpen={state.mentionOpen}
             mentionQuery={state.mentionQuery}
             mentionMatches={state.mentionMatches}
             onSelectMention={state.selectEntityFromMention}
             onSendMessage={state.sendMessage}
+            onInsert={state.insertIntoManuscript}
             entities={state.entities}
+            activeEp={state.activeEp}
           />
         )}
 
@@ -80,16 +83,19 @@ export default function Layout({ state }) {
             <RightPanel
               messages={state.messages}
               generating={state.generating}
+              progressLabel={state.progressLabel}
+              mode={state.mode}
+              onModeChange={state.setMode}
               input={state.input}
               onInputChange={state.handleInputChange}
-              contextChips={state.contextChips}
-              onRemoveChip={state.removeContextChip}
               mentionOpen={state.mentionOpen}
               mentionQuery={state.mentionQuery}
               mentionMatches={state.mentionMatches}
               onSelectMention={state.selectEntityFromMention}
               onSendMessage={state.sendMessage}
+              onInsert={state.insertIntoManuscript}
               entities={state.entities}
+              activeEp={state.activeEp}
             />
           </div>
         )}
@@ -100,16 +106,19 @@ export default function Layout({ state }) {
             <RightPanel
               messages={state.messages}
               generating={state.generating}
+              progressLabel={state.progressLabel}
+              mode={state.mode}
+              onModeChange={state.setMode}
               input={state.input}
               onInputChange={state.handleInputChange}
-              contextChips={state.contextChips}
-              onRemoveChip={state.removeContextChip}
               mentionOpen={state.mentionOpen}
               mentionQuery={state.mentionQuery}
               mentionMatches={state.mentionMatches}
               onSelectMention={state.selectEntityFromMention}
               onSendMessage={state.sendMessage}
+              onInsert={state.insertIntoManuscript}
               entities={state.entities}
+              activeEp={state.activeEp}
             />
           </div>
         )}
@@ -119,9 +128,7 @@ export default function Layout({ state }) {
           <EntityDrawer
             entity={state.selectedEntity}
             onClose={() => state.setSelectedEntity(null)}
-            onAddToChat={(entityId) => {
-              state.setContextChips([...state.contextChips, entityId]);
-            }}
+            onAddToChat={state.addEntityMention}
           />
         )}
       </div>

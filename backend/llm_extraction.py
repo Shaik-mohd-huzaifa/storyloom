@@ -1,11 +1,8 @@
 import json
 import os
 
-from openai import OpenAI
-
+from openai_client import get_client
 from schemas import ExtractionResult
-
-_client = None
 
 EXTRACTION_PROMPT = """You are extracting a story knowledge graph from a script/episode excerpt.
 Return ONLY valid JSON matching this exact structure:
@@ -30,13 +27,6 @@ Text:
 {chunk}
 \"\"\"
 """
-
-
-def get_client() -> OpenAI:
-    global _client
-    if _client is None:
-        _client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    return _client
 
 
 def extract_entities(chunk: str, episode: str) -> ExtractionResult:

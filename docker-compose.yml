@@ -21,6 +21,9 @@ services:
       - NEO4J_PASSWORD=password
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_EXTRACTION_MODEL=${OPENAI_EXTRACTION_MODEL:-gpt-4o-mini}
+      - OPENAI_CHAT_MODEL=${OPENAI_CHAT_MODEL:-gpt-4o-mini}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHAT_AGENT_MAX_ITERATIONS=${CHAT_AGENT_MAX_ITERATIONS:-6}
     depends_on:
       - chromadb
       - mongodb

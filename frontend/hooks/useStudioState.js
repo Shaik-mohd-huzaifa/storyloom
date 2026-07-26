@@ -1,10 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import {
-  mockEpisodes,
-  mockManuscript,
-  mockChatMessages,
-  mockAnnotations,
-} from '../lib/mock-data';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { mockManuscript, mockAnnotations } from '../lib/mock-data';
+import { getChatStatus, getEntities, getEpisodes, startChat } from '../lib/api';
+
+const EMPTY_EPISODE = { id: null, num: 0, title: 'Untitled', mins: 0, status: 'empty' };
 
 export function useStudioState() {
   // Layout
@@ -12,9 +10,9 @@ export function useStudioState() {
   const [split, setSplit] = useState(46); // sidebar divider height %
   const [vw, setVw] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280);
 
-  // Episodes
-  const [episodes, setEpisodes] = useState(mockEpisodes);
-  const [activeEp, setActiveEp] = useState(mockEpisodes[6]); // EP 07 by default
+  // Episodes (real, fetched from ingested story data)
+  const [episodes, setEpisodes] = useState([]);
+  const [activeEp, setActiveEp] = useState(EMPTY_EPISODE);
 
   // Manuscript
   const [manuscriptText, setManuscriptText] = useState(mockManuscript);
@@ -43,42 +41,38 @@ export function useStudioState() {
   const [forceExpand, setForceExpand] = useState(false);
 
   // Chat
-  const [messages, setMessages] = useState(mockChatMessages);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [contextChips, setContextChips] = useState([]);
   const [generating, setGenerating] = useState(false);
+  const [progressLabel, setProgressLabel] = useState(null);
+  const [mode, setMode] = useState('ask'); // 'ask' | 'ideate'
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
+  const pollTimerRef = useRef(null);
 
   // Fetch entities from backend
   useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        // Use backend service name for Docker, localhost for development
-        const backendUrl = 'http://backend:8000';
-        const response = await fetch(`${backendUrl}/api/entities`);
-        if (response.ok) {
-          const data = await response.json();
-          setEntities(data.entities || []);
-          console.log('Loaded', data.entities?.length || 0, 'entities');
-        }
-      } catch (err) {
-        console.warn('Failed to fetch entities:', err);
-        // Fallback: try localhost (for dev)
-        try {
-          const response = await fetch('http://localhost:8000/api/entities');
-          if (response.ok) {
-            const data = await response.json();
-            setEntities(data.entities || []);
-          }
-        } catch (err2) {
-          console.warn('Fallback fetch also failed:', err2);
-        }
-      } finally {
-        setEntitiesLoading(false);
-      }
+    getEntities()
+      .then(setEntities)
+      .catch((err) => console.warn('Failed to fetch entities:', err))
+      .finally(() => setEntitiesLoading(false));
+  }, []);
+
+  // Fetch episodes from backend (derived from ingested events)
+  useEffect(() => {
+    getEpisodes()
+      .then((eps) => {
+        setEpisodes(eps);
+        if (eps.length > 0) setActiveEp(eps[0]);
+      })
+      .catch((err) => console.warn('Failed to fetch episodes:', err));
+  }, []);
+
+  // Stop any in-flight chat poll on unmount
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
-    fetchEntities();
   }, []);
 
   // Window resize listener
@@ -133,31 +127,46 @@ export function useStudioState() {
       )
     : [];
 
-  // Handle entity selection from @mention
+  // Handle entity selection from @mention — replaces the in-progress "@query" text with
+  // "@EntityName " (Cursor/Claude-style visible mention). No separate chip state is kept —
+  // whichever entities are @mentioned in the message text ARE the context, derived fresh
+  // at send time (see deriveMentionedEntityIds below), so there's nothing stale to display
+  // or remove separately.
   const selectEntityFromMention = useCallback(
-    (entityId) => {
-      setContextChips([...contextChips, entityId]);
-      // Remove @mention from input
+    (entity) => {
       const lastAtIndex = input.lastIndexOf('@');
-      const newInput = input.substring(0, lastAtIndex).trimEnd();
+      const newInput = `${input.substring(0, lastAtIndex)}@${entity.name} `;
       setInput(newInput);
       setMentionOpen(false);
       setMentionQuery('');
     },
-    [input, contextChips]
+    [input]
   );
 
-  // Remove context chip
-  const removeContextChip = useCallback(
+  // Insert an "@EntityName " mention at the end of the composer (used by "Add to chat
+  // context" in the entity drawer — same mechanism as picking from the @ popover).
+  const addEntityMention = useCallback(
     (entityId) => {
-      setContextChips(contextChips.filter((id) => id !== entityId));
+      const entity = entities.find((e) => e.id === entityId);
+      if (!entity) return;
+      setInput((prev) => `${prev}${prev && !prev.endsWith(' ') ? ' ' : ''}@${entity.name} `);
     },
-    [contextChips]
+    [entities]
   );
 
-  // Send chat message
+  // Derive which known entities are @mentioned in a piece of message text, so context
+  // sent to the backend always matches exactly what's visibly written in the message.
+  const deriveMentionedEntityIds = useCallback(
+    (text) => {
+      if (!text) return [];
+      return entities.filter((e) => e.name && text.toLowerCase().includes(`@${e.name.toLowerCase()}`)).map((e) => e.id);
+    },
+    [entities]
+  );
+
+  // Send chat message — kicks off a backend agent run, then polls its status until done
   const sendMessage = useCallback(async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || generating) return;
 
     const userMessage = {
       id: `msg-${Date.now()}`,
@@ -166,24 +175,105 @@ export function useStudioState() {
       timestamp: new Date(),
     };
 
+    // Prior turns, so the agent remembers its own earlier clarifying question (if any)
+    // and the user's reply — a clarification round-trip needs conversation continuity.
+    const history = messages
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({ role: m.role, content: m.text }));
+
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setGenerating(true);
+    setProgressLabel('STARTING');
 
-    // Simulate API call with delay
-    setTimeout(() => {
-      const assistantMessage = {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        label: 'ANALYSIS',
-        text: `This is an automated response based on your question. In a real system, this would be powered by the backend AI that can search your story\'s context and entity relationships.`,
-        cites: [],
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+    try {
+      const { run_id } = await startChat({
+        message: userMessage.text,
+        mode,
+        contextChips: deriveMentionedEntityIds(userMessage.text),
+        episode: activeEp?.id,
+        history,
+      });
+
+      // Guards against overlapping ticks: setInterval fires on a fixed clock regardless
+      // of whether the previous tick's fetch has resolved, so if a status check is ever
+      // slower than the interval, two ticks can both observe status:"done" and both try
+      // to append the final message. `settled` makes the first one to see it win.
+      let settled = false;
+
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          const status = await getChatStatus(run_id);
+          if (settled) return;
+          if (status.current_step) setProgressLabel(status.current_step);
+
+          if (status.status === 'done' || status.status === 'error') {
+            settled = true;
+            clearInterval(pollTimerRef.current);
+            pollTimerRef.current = null;
+            setGenerating(false);
+            setProgressLabel(null);
+
+            if (status.status === 'done' && status.message) {
+              setMessages((prev) => [...prev, { ...status.message, timestamp: new Date(status.message.timestamp) }]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: `msg-${Date.now()}`,
+                  role: 'assistant',
+                  label: 'ERROR',
+                  text: `Something went wrong while thinking about that: ${status.error || 'unknown error'}`,
+                  cites: [],
+                  timestamp: new Date(),
+                },
+              ]);
+            }
+          }
+        } catch (err) {
+          if (settled) return;
+          settled = true;
+          clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+          setGenerating(false);
+          setProgressLabel(null);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `msg-${Date.now()}`,
+              role: 'assistant',
+              label: 'ERROR',
+              text: 'Lost connection while waiting for a response.',
+              cites: [],
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      }, 1000);
+    } catch (err) {
       setGenerating(false);
-    }, 1700);
-  }, [input]);
+      setProgressLabel(null);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          label: 'ERROR',
+          text: 'Could not reach the story assistant backend.',
+          cites: [],
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [input, generating, mode, activeEp, messages, deriveMentionedEntityIds]);
+
+  // Insert AI-suggested text into the manuscript (Ideate mode "Insert into scene")
+  const insertIntoManuscript = useCallback(
+    (text) => {
+      setManuscriptText((prev) => (prev ? `${prev}\n\n${text}` : text));
+    },
+    []
+  );
 
   // Toggle group expansion
   const toggleGroup = useCallback(
@@ -252,16 +342,18 @@ export function useStudioState() {
     setMessages,
     input,
     handleInputChange,
-    contextChips,
-    setContextChips,
     generating,
     setGenerating,
+    progressLabel,
+    mode,
+    setMode,
     mentionOpen,
     setMentionOpen,
     mentionQuery,
     mentionMatches,
     selectEntityFromMention,
-    removeContextChip,
+    addEntityMention,
     sendMessage,
+    insertIntoManuscript,
   };
 }
