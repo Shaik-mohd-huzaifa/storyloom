@@ -18,6 +18,9 @@ class GraphStore:
     def close(self):
         self._driver.close()
 
+    def verify_connectivity(self):
+        self._driver.verify_connectivity()
+
     def store_extraction(self, result: ExtractionResult, episode: str, event_offset: int) -> int:
         with self._driver.session() as session:
             session.execute_write(self._write_extraction, result, episode, event_offset)
