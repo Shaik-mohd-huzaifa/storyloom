@@ -35,6 +35,14 @@ storyloom/
 - **URL**: http://localhost:7474
 - **Default Credentials**: neo4j / password
 
+### ChromaDB (Vector Database)
+- **Port**: 8001 (mapped from container port 8000)
+- **URL**: http://localhost:8001
+
+### MongoDB (Document Database)
+- **Port**: 27020 (mapped from container port 27017)
+- **URI**: mongodb://localhost:27020
+
 ## Getting Started
 
 ### Prerequisites
@@ -70,8 +78,42 @@ docker-compose down
 - **Frontend**: http://localhost:3000
 - **Neo4j Browser**: http://localhost:7474
 
+## Ingestion Pipeline
+
+`POST /ingest` (multipart form) accepts a `.txt`, `.pdf`, or `.docx` file plus an optional
+`episode` field. It:
+
+1. Extracts raw text from the file.
+2. Splits the text into chunks.
+3. Sends each chunk to an LLM (OpenAI) to extract characters, locations, plot threads,
+   events, and character relationships as structured JSON.
+4. Upserts the extracted entities into Neo4j using this schema:
+   - Nodes: `Character`, `Location`, `Event`, `PlotThread`
+   - Edges: `APPEARS_IN`, `RELATED_TO`, `OCCURS_AT`, `PART_OF`, `FOLLOWS` (chronological
+     ordering between events from the same source)
+
+### Setup
+
+Copy `.env.example` to `.env` at the project root and set your OpenAI key:
+
+```bash
+cp .env.example .env
+```
+
+Then set `OPENAI_API_KEY=sk-...` in that `.env` file. Docker Compose loads it
+automatically and passes it through to the backend container.
+
+### Example
+
+```bash
+curl -X POST http://localhost:8000/ingest \
+  -F "file=@episode1.pdf" \
+  -F "episode=Episode 1"
+```
+
 ## Notes
 
-- Services are currently running independently
-- No inter-service connections configured yet
-- All services will start on their first `docker-compose up`
+- Services are currently running independently aside from the backend's connections to
+  Neo4j, ChromaDB, and MongoDB.
+- Vector store ingestion (ChromaDB) and the retrieval agent are not wired up yet — this
+  pipeline currently only populates the Neo4j knowledge graph.
