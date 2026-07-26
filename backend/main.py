@@ -65,6 +65,14 @@ def mongodb_health():
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 
+@app.get("/health/neo4j")
+def neo4j_health():
+    try:
+        graph_store.verify_connectivity()
+        return {"status": "healthy"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
+
 @app.post("/ingest")
 async def ingest_document(file: UploadFile = File(...), episode: Optional[str] = Form(None)):
     content = await file.read()
